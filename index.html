@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QBD647KJDD"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-    
-      gtag('config', 'G-QBD647KJDD');
-    </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QBD647KJDD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-QBD647KJDD');
+  </script>
   <!-- endof Global site tag (gtag.js) - Google Analytics -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Feranno Liu">
-  <title>Your Name</title>
-  <link rel="stylesheet" href="main.css">
+  <title> Feranno Liu </title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 
@@ -24,15 +25,51 @@
   <div id="description">
     <p>deriving how to make humans less fragile.</p>
   </div>
-  <div id="whole brain emulation">
-  <p class="notop">
-      <li>Whole Brain Emulation </li>
-      
-      I’m interested in understanding how systems centered around whole brain 
-      emulations will look like in 5 years, and how they will touch our lives 
-      in unthinkable ways. <br><br />
-      
+  <button class="accordion">
+    <h3>Whole Brain Emulation</h3>
+  </button>
+  <div class="panel">
+    <p>
+
+    <ul>
+      <li>
+        I’m interested in understanding how systems centered around whole brain
+        emulations will look like in 5 years, and how they will touch our lives
+        in unthinkable ways.
+      </li>
+    </ul>
+
+    <a href="#top">Back To Top</a>
+    <br /><br />
     </p>
   </div>
 </body>
+
+<style>
+  .panel {
+    padding: 0 18px;
+    background-color: white;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+  }
+</style>
+
+<script>
+  var acc = document.getElementsByClassName("accordion");
+  var i;
+
+  for (i = 0; i < acc.length; i++) {
+    acc[i].addEventListener("click", function () {
+      this.classList.toggle("active");
+      var panel = this.nextElementSibling;
+      if (panel.style.maxHeight) {
+        panel.style.maxHeight = null;
+      } else {
+        panel.style.maxHeight = panel.scrollHeight + "px";
+      }
+    });
+  }
+</script>
+
 </html>
