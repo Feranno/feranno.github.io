@@ -1,1 +1,3 @@
-
+#content p.notop {
+  margin-top: 0;
+}
