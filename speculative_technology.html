@@ -149,24 +149,24 @@
                 second</p>
             </blockquote>
             <p><em>*That’s a lot of bits!!</em></p>
-            <p><strong>Limitations:</strong> Information compression and transmission.</p>
+            <p>Limitations: Information compression and transmission.</p>
           </section>
 
           <section class="interpretation-section">
-            <h4>2. Temperature and Heat</h4>
+            <p>2. Temperature and Heat</p>
             <p>Human brain tissue can withstand 2&deg;C change in temperature over hours, before serious tissue damage.
             </p>
             <blockquote>
               <p>Instantaneous change in temperature of brain tissue wrt time = heat transfer of deep brain tissue /
                 brain tissue's heat capacity.</p>
-              <p><strong>Heat transfer of brain tissue:</strong><br>
+              <p>Heat transfer of brain tissue:<br>
                 = (applied power + power per unit mass of basal metabolism) - (density &times; heat capacity &times;
                 volume rate of flow &times; change in temperature of blood)</p>
             </blockquote>
             <p>Solve for applied power to get the heat generated, which must be less than 2.5 times the energy generated
               by the human brain.</p>
             <p><em>*That’s a lot of heat!!</em></p>
-            <p><strong>Limitations:</strong> Heat generated from electrodes, neural recording, processing, and
+            <p>Limitations:Heat generated from electrodes, neural recording, processing, and
               transmission.</p>
           </section>
 
@@ -174,7 +174,7 @@
             <p>3. Volume Constraints</p>
             <p>The volume of electrodes and hardware implanted into the brain must displace &lt;1% of the total brain.
             </p>
-            <p><strong>Constraints:</strong></p>
+            <p>Constraints:</p>
             <ul>
               <li>Number of neurons a single electrode can distinguish from one another.</li>
               <li>Diameter of the wire.</li>
@@ -183,7 +183,7 @@
               unreliable signals. But the number of electrodes can’t be too little, otherwise we can’t distinguish the
               neurons from one another.</p>
             <p><em>*That’s a lot of wires in your brain!!</em></p>
-            <p><strong>Limitations:</strong> The hardware implants connected to the brain have to displace &lt;1% of
+            <p>Limitations: The hardware implants connected to the brain have to displace &lt;1% of
               total brain volume, before sustaining permanent, irreversible brain damage.</p>
           </section>
 
@@ -195,13 +195,13 @@
           <p>A summary of main bottlenecks in WBE (Whole Brain Emulation):</p>
 
           <section class="bottleneck-section">
-            <h4>Spatial Temporal Resolution and Information Throughput (2.1, 3.1)</h4>
+            <p>Spatial Temporal Resolution and Information Throughput (2.1, 3.1)</p>
             <p>Trying to capture the total data rate for a human brain seems like an intractable problem, so let’s
               experiment with a smaller case that has more collectable information, and see if we can get hints or
               footholds to use. <em>How many bits per second are needed to record every single neuron in a mouse
                 brain?</em></p>
 
-            <p><strong>Reasoning:</strong> Breaks down a terribly difficult and messy problem into component parts via
+            <p>Reasoning: Breaks down a terribly difficult and messy problem into component parts via
               stating your assumptions for:</p>
             <ul>
               <li>Number of neurons measured in samples</li>
@@ -209,7 +209,7 @@
               <li>Bits per sample determined by level of detail for shape of voltage</li>
             </ul>
 
-            <p><strong>Framework:</strong> Total data rate = N(neurons) &times; F(samples per second) &times; bit per
+            <p>Framework: Total data rate = N(neurons) &times; F(samples per second) &times; bit per
               sample.</p>
             <p>This gives a holistic overview of constraints.</p>
 
@@ -230,21 +230,21 @@
               transmission, in the form of optics, silicon, and electricity, generates heat. The brain is essentially a
               wet computer that “cooks” easily.</p>
 
-            <p><strong>Thought Experiment:</strong> How much total power in Watts or milliWatts can be dissipated within
+            <p>Thought Experiment: How much total power in Watts or milliWatts can be dissipated within
               the volume of a mouse brain (about 0.5 grams), before the temperature rises more than 2&deg;C?</p>
 
-            <p><strong>Assumptions:</strong></p>
+            <p>Assumptions:</p>
             <ul>
               <li>The brain is mostly water.</li>
               <li>The blood flow circulation can dissipate heat.</li>
               <li>The brain’s metabolic rate is around 0.2 watts.</li>
             </ul>
 
-            <p><strong>Guess:</strong> No more than 4 watts.</p>
-            <p><strong>Reasoning:</strong> A light bulb consumes 2 to 100 watts. The number should be lower.</p>
+            <p>Guess: No more than 4 watts.</p>
+            <p>Reasoning: A light bulb consumes 2 to 100 watts. The number should be lower.</p>
 
-            <p><strong>Actual:</strong> A recording should not dissipate more than ~40mW per 500mg mouse brain.</p>
-            <p><strong>Reasoning:</strong> The brain tissue can sustain increased temperatures of 2&deg;C above
+            <p>Actual: A recording should not dissipate more than ~40mW per 500mg mouse brain.</p>
+            <p>Reasoning: The brain tissue can sustain increased temperatures of 2&deg;C above
               metabolic state without severe damage over a timescale of hours. Putting together a formula to determine
               the constraints given a dT/dt = 0, we have the following components:</p>
             <ul>
