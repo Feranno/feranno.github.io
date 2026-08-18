@@ -130,72 +130,7 @@
         <li>Physical Principles for Scaling Neural Decoding</li>
         <div class="brain-interface-notes">
           <p>Let’s say you want to build magical brain interfaces.</p>
-
-          <p>The Bottleneck is:</p>
-          <ol>
-            <li>Information processing and transmission load</li>
-            <li>Heat generated from (1)</li>
-            <li>Volume displacement from building devices from (1) and (2)</li>
-          </ol>
-
-          <hr>
-
-          <p>Mechanistic Interpretations</p>
-
-          <section class="interpretation-section">
-            <p>1. Data Rate</p>
-            <p>The number of bits needed to record every single neuron in the human brain per second can be measured.
-            </p>
-            <blockquote>
-              <p>Total data rate = number of neurons in a human brain &times; frequency of sampling &times; bits per
-                sample</p>
-              <p>= 86 billion neurons &times; 1000Hz &times; 1 bit per sample = 86 trillion bits per second = 11 Tb /
-                second</p>
-            </blockquote>
-            <p><em>*That’s a lot of bits!!</em></p>
-            <p>Limitations: Information compression and transmission.</p>
-          </section>
-
-          <section class="interpretation-section">
-            <p>2. Temperature and Heat</p>
-            <p>Human brain tissue can withstand 2&deg;C change in temperature over hours, before serious tissue damage.
-            </p>
-            <blockquote>
-              <p>Instantaneous change in temperature of brain tissue wrt time = heat transfer of deep brain tissue /
-                brain tissue's heat capacity.</p>
-              <p>Heat transfer of brain tissue:<br>
-                = (applied power + power per unit mass of basal metabolism) - (density &times; heat capacity &times;
-                volume rate of flow &times; change in temperature of blood)</p>
-            </blockquote>
-            <p>Solve for applied power to get the heat generated, which must be less than 2.5 times the energy generated
-              by the human brain.</p>
-            <p><em>*That’s a lot of heat!!</em></p>
-            <p>Limitations:Heat generated from electrodes, neural recording, processing, and
-              transmission.</p>
-          </section>
-
-          <section class="interpretation-section">
-            <p>3. Volume Constraints</p>
-            <p>The volume of electrodes and hardware implanted into the brain must displace &lt;1% of the total brain.
-            </p>
-            <p>Constraints:</p>
-            <ul>
-              <li>Number of neurons a single electrode can distinguish from one another.</li>
-              <li>Diameter of the wire.</li>
-            </ul>
-            <p>The wire can’t be too thin, otherwise it isn’t physically feasible to construct it without giving
-              unreliable signals. But the number of electrodes can’t be too little, otherwise we can’t distinguish the
-              neurons from one another.</p>
-            <p><em>*That’s a lot of wires in your brain!!</em></p>
-            <p>Limitations: The hardware implants connected to the brain have to displace &lt;1% of
-              total brain volume, before sustaining permanent, irreversible brain damage.</p>
-          </section>
-
-          <hr>
-
-          <p>Great! Now you have a somewhat broad understanding of what brain-computer interface researchers are
-            consistently asking themselves every time they build new select modalities to understand our thoughts.</p>
-
+        
           <p>A summary of main bottlenecks in WBE (Whole Brain Emulation):</p>
 
           <section class="bottleneck-section">
