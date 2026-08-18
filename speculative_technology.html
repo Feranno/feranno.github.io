@@ -157,85 +157,15 @@
             <p>Limitation #3: the hardware implants connected to the brain has to displace &lt1% of total brain volume, 
             before sustaining permanent, irreversible brain damage. </p>
 
-
-
-            <p>Trying to capture the total data rate for a human brain seems like an intractable problem, so let’s
-              experiment with a smaller case that has more collectable information, and see if we can get hints or
-              footholds to use. <em>How many bits per second are needed to record every single neuron in a mouse
-                brain?</em></p>
-
-            <p>Reasoning: Breaks down a terribly difficult and messy problem into component parts via
-              stating your assumptions for:</p>
-            <ul>
-              <li>Number of neurons measured in samples</li>
-              <li>Sampling rate (samples per second) measured in Hz</li>
-              <li>Bits per sample determined by level of detail for shape of voltage</li>
-            </ul>
-
-            <p>Framework: Total data rate = N(neurons) &times; F(samples per second) &times; bit per
-              sample.</p>
-            <p>This gives a holistic overview of constraints.</p>
-
-            <p>75 billion bits per second seems like an almost impossible throughput, even for a mouse brain. This is
-              about 100 Gb per second. For a mouse brain! A human brain is 1300 to 1400 grams. A mouse brain is 0.5
-              grams. The weight ratio is roughly 2600:1. Using this scaling, we can expect the total data rate of
-              recording and transmitting human brain data to be around 260 Tb per second.</p>
-            <p>However, there are limitations to this estimation. Neuron density differs across species. Smaller mammals
-              often have denser brains than humans. I expect a 20% reduction based on similar mathematical estimations.
-              But not only does brain density differ across mammals, the neuron density distribution varies across
-              different regions of the mouse’s brain, like the frontal cortex versus the visual cortex.</p>
-          </section>
-
-          <section class="bottleneck-section: energy dissipation">
-            <p>The first physical wall is spatial and temporal resolution—how much information we can reasonably record
-              and compress from the brain. The next physical hurdle is energy dissipation. All that data processing and
-              transmission, in the form of optics, silicon, and electricity, generates heat. The brain is essentially a
-              wet computer that “cooks” easily.</p>
-
-            <p>Thought Experiment: How much total power in Watts or milliWatts can be dissipated within
-              the volume of a mouse brain (about 0.5 grams), before the temperature rises more than 2&deg;C?</p>
-
-            <p>Assumptions:</p>
-            <ul>
-              <li>The brain is mostly water.</li>
-              <li>The blood flow circulation can dissipate heat.</li>
-              <li>The brain’s metabolic rate is around 0.2 watts.</li>
-            </ul>
-
-            <p>Guess: No more than 4 watts.</p>
-            <p>Reasoning: A light bulb consumes 2 to 100 watts. The number should be lower.</p>
-
-            <p>Actual: A recording should not dissipate more than ~40mW per 500mg mouse brain.</p>
-            <p>Reasoning: The brain tissue can sustain increased temperatures of 2&deg;C above
-              metabolic state without severe damage over a timescale of hours. Putting together a formula to determine
-              the constraints given a dT/dt = 0, we have the following components:</p>
-            <ul>
-              <li><strong>P(delivered):</strong> Brain is receiving constant power influx</li>
-              <li><strong>P(metabolic):</strong> Power per unit of mass of basal metabolism</li>
-              <li><strong>Cooling factor:</strong> Density of blood &times; specific heat capacity of blood &times;
-                volume flow rate of blood &times; temperature difference between the brain tissue and the blood</li>
-            </ul>
-            <p>All divided by <strong>C(capacity)</strong>, the specific heat capacity of brain tissue.</p>
-
-            <p>The brain is a very fragile piece of biological tissue. For reference, your guess of 4 watts dumped into
-              the 0.5 grams of a mouse brain is equivalent to about 8,000 watts per kilogram—nearly 40 times the power
-              density of a high-end microwave oven. The brain would cook in seconds.</p>
-            <p>Using the above assumptions, we calculated ~40mW is significant because it is very close to the brain's
-              natural metabolic rate of 15mW. Because power consumption scales linearly with the number of neurons
-              (Herculano-Houzel, 2011), a total brain recording device can only afford to generate 2.5 times the heat
-              the brain produces naturally.</p>
-          </section>
-
-          <section class="bottleneck-section">
-            <p>Volume Displacement (&lt;1% of brain volume)</p>
-            <p>How many electrodes do we need to clearly distinguish one neuron from another? How small do the diameter
-              of the wires need to be? Take a guess.</p>
-            <ul>
-              <li>Number of electrodes needed to capture all neurons for a 455mm&sup3; mouse brain.</li>
-              <li>Diameter of wires.</li>
-            </ul>
-          </section>
-        </div>
+            Great! Now you have a somewhat broad understanding of what brain computer interface researchers are 
+            consistently asking themselves every time they build new select modalities to understand our thoughts. To 
+            get a sense of how whole brain emulation works for humans, they reason from smaller more controllable
+            environments, like mouse brains, then scale up using assumptions. A few questions: <br/><br/>
+            1. How many bits per second are needed to record every single neuron in a mouse brain? <br/>
+            2. How much total power in Watts or milliWatts can be dissipated within the volume of a mouse 
+            brain, about 0.5 grams, before the temperature rises more than 2°C? <br/>
+            3. How many electrodes do we need to clearly distinguish one neuron from another? 
+            How small do the diameter of the wires need to be? 
       </ul>
 
       <a href="#top">Back To Top</a>
