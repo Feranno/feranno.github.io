@@ -20,8 +20,15 @@
 
   <title> Speculative Technologies </title>
   <link rel="stylesheet" href="/style.css">
-  <script src="https://polyfill.io"></script>
-  <script id="MathJax-script" async src="https://jsdelivr.net"></script>
+  <!-- FIXED MATHJAX SCRIPTS BELOW -->
+   <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']] // This allows both $...$ and \(...\) for inline math
+        }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://jsdelivr.net"></script>
 </head>
 
 <body>
