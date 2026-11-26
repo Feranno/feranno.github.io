@@ -1,39 +1,54 @@
 <!doctype html>
 <!--
-  ███ STEP 1 · HTML: the skeleton ███
+  MY UNIVERSE: a personal site where each section is a glowing 3D sphere.
 
-  A website is just TEXT FILES that a browser reads. There are 3 languages:
-    HTML        = WHAT is on the page   (this step)
-    CSS         = HOW it looks          (step 2)
-    JavaScript  = WHAT it does          (step 3)
+  How it's built:
+    HTML (body)   the page structure: header, menu, content panel, popup
+    CSS  (style)  how everything looks
+    JS   (script) the data, the 3D scene (three.js), and all interaction
 
-  HTML is made of TAGS. A tag looks like <name> ... </name>.
-    <p>Hello</p>        "p" means paragraph. <p> opens it, </p> closes it.
-    Tags go inside tags, like boxes in boxes. That nesting is the whole idea.
-  Some tags have ATTRIBUTES, extra info written inside the opening tag:
-    <html lang="en">    attribute "lang" with value "en"
+  Run it through a local server so images load:
+    cd ~/Documents/Claude/spheres && python3 -m http.server 8765
+    then open http://localhost:8765/step-1.html
 
-  Anything between and --> <!-- (like this text) is a COMMENT.
-  The browser ignores it. It's a note for humans.
-
-  Try it: change some text below, save, and reload the page.
+  To add content, edit the SECTIONS list at the top of the script.
 -->
-
-<!-- The first line above, <!doctype html>, tells the browser "this is modern HTML". -->
-
-<!-- <html> is the outermost box. Everything else goes inside it. -->
 <html lang="en">
 
-<!-- <head> holds info ABOUT the page. Nothing in here is shown on the page itself. -->
-
 <head>
-  <!-- Which alphabet the file uses. utf-8 covers every language and emoji. -->
   <meta charset="utf-8">
-  <!-- The text shown on the browser tab. -->
   <title>My Universe</title>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&display=swap">
+
   <style>
+    /* ============================================================
+       1. COLORS & FONTS: change the look in one place
+       ============================================================ */
+    :root {
+      --bg: #0b0d17;          /* page background (deep navy) */
+      --panel: #141829;       /* popup background */
+      --muted: #8a8fa8;       /* secondary text */
+      --line: #3a3f5c;        /* thin borders */
+      --font-body: "Inter", sans-serif;
+      --font-display: "Instrument Serif", serif;
+      /* --accent is set by JavaScript to the open section's color */
+    }
+
+    body {
+      background: var(--bg);
+      color: white;
+      font-family: var(--font-body);
+    }
+
+    h1, h2, h3 {
+      font-family: var(--font-display);
+      font-weight: 400;
+    }
+
+    /* ============================================================
+       2. LAYERS: the 3D canvas sits behind everything
+       ============================================================ */
     canvas {
       position: fixed;
       top: 0;
@@ -41,29 +56,13 @@
       z-index: 0;
     }
 
-    header,
-    nav,
-    main {
-      z-index: 1;
+    header, nav, main {
+      z-index: 1;              /* above the canvas (z-index needs a position set) */
     }
 
-    main {
-      position: relative;
-    }
-
-    /* z-index only works on positioned elements */
-
-    body {
-      background: #0b0d17;
-      color: white;
-    }
-
-    main {
-      margin-left: clamp(280px, 45%, 50%);
-      padding: 120px 48px 80px 0;
-    }
-
-    /* 4 values = top right bottom left (clockwise) */
+    /* ============================================================
+       3. HEADER & MENU: pinned to the corners of the screen
+       ============================================================ */
     header {
       position: fixed;
       top: 24px;
@@ -81,99 +80,31 @@
     }
 
     nav button {
-      text-shadow: 0 0 8px #0b0d17;
-    }
-
-    nav button {
       background: none;
       border: none;
-      color: #8a8fa8;
+      color: var(--muted);
       font: inherit;
       cursor: pointer;
+      text-shadow: 0 0 8px var(--bg);   /* keeps text readable over the spheres */
     }
 
+    nav button:hover,
     nav button.active {
       color: white;
     }
 
-    /* button AND .active, with no space = both at once */
-    nav button.active::before {
+    nav button.active::before {         /* a colored dot before the open section */
       content: "● ";
       color: var(--accent);
     }
 
-    /* ::before inserts content before the text */
-
-    nav button:hover {
-      color: white;
-    }
-
-    .card {
+    /* ============================================================
+       4. CONTENT PANEL: the right side of the screen
+       ============================================================ */
+    main {
       position: relative;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    /* overflow: hidden = crop anything sticking out */
-    .card img {
-      position: absolute;
-      inset: 0;
-      /* inset: 0 = stretch to all four edges of the card */
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      /* fill the box and crop the extra, instead of squashing the image */
-      transition: transform 0.5s, filter 0.5s;
-    }
-
-    .card span {
-      position: relative;
-      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
-    }
-
-    /* stays on top of the image, readable on any picture */
-    .card:hover img {
-      transform: scale(1.1);
-      filter: brightness(1.2);
-    }
-
-    /* zoom and brighten inside the cropped frame */
-
-    .card {
-      aspect-ratio: 3 / 4;
-      /* poster shape: height follows width */
-      display: flex;
-      align-items: flex-end;
-      /* push the title to the bottom */
-      padding: 12px;
-      border-radius: 10px;
-      background: linear-gradient(160deg, var(--accent, #34d399), #0b0d17);
-      transition: transform 0.2s;
-      /* animate any change to transform */
-    }
-
-    .card:hover {
-      transform: scale(1.08);
-    }
-
-    /* :hover = "while the mouse is over it" */
-
-    .grid {
-      display: grid;
-      /* grid-template-columns: repeat(3, 1fr); */
-      grid-template-columns: repeat(auto-fill, minmax(var(--card-min, 160px), 1fr));
-      gap: 12px;
-    }
-
-    body {
-      font-family: "Inter", sans-serif;
-    }
-
-    /* merge this into your existing body rule */
-    h1,
-    h2 {
-      font-family: "Instrument Serif", serif;
-      font-weight: 400;
+      margin-left: clamp(280px, 45%, 50%);   /* 45% of the width, kept between 280px and 50% */
+      padding: 120px 48px 80px 0;            /* top right bottom left */
     }
 
     h2 {
@@ -181,23 +112,70 @@
       margin: 0 0 8px;
     }
 
+    /* ============================================================
+       5. CARDS: a responsive grid of posters
+       ============================================================ */
+    .grid {
+      display: grid;
+      /* as many columns as fit, each at least --card-min wide */
+      grid-template-columns: repeat(auto-fill, minmax(var(--card-min, 160px), 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      position: relative;
+      aspect-ratio: 3 / 4;               /* poster shape */
+      display: flex;
+      align-items: flex-end;             /* title sits at the bottom */
+      padding: 12px;
+      border-radius: 10px;
+      overflow: hidden;                  /* crop the image to the rounded corners */
+      cursor: pointer;
+      background: linear-gradient(160deg, var(--accent, #34d399), var(--bg));
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.08);
+    }
+
+    .card img {
+      position: absolute;
+      inset: 0;                          /* stretch to all four edges */
+      width: 100%;
+      height: 100%;
+      object-fit: cover;                 /* fill and crop, never squash */
+      transition: transform 0.5s, filter 0.5s;
+    }
+
+    .card:hover img {
+      transform: scale(1.1);
+      filter: brightness(1.2);
+    }
+
+    .card span {
+      position: relative;                /* above the image */
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+    }
+
+    /* ============================================================
+       6. POPUP: details for one card
+       ============================================================ */
     #popup {
-      padding: 0;
+      padding: 0;                        /* so only clicks OUTSIDE hit the dialog itself */
       border: none;
       border-radius: 16px;
-      background: #141829;
+      background: var(--panel);
       color: white;
       width: min(420px, 90vw);
       overflow: hidden;
     }
 
-    /* min() = whichever is smaller. 90vw = 90% of the window width */
     #popup::backdrop {
       background: rgba(5, 6, 12, 0.6);
       backdrop-filter: blur(6px);
     }
 
-    /* the dimmed, blurred page behind it */
     #popup img {
       width: 100%;
       aspect-ratio: 16 / 9;
@@ -210,8 +188,6 @@
     }
 
     #popup h3 {
-      font-family: "Instrument Serif", serif;
-      font-weight: 400;
       font-size: 32px;
       margin: 0 0 8px;
     }
@@ -223,7 +199,7 @@
 
     #popup-close {
       background: none;
-      border: 1px solid #3a3f5c;
+      border: 1px solid var(--line);
       color: white;
       border-radius: 999px;
       padding: 6px 16px;
@@ -231,6 +207,9 @@
       cursor: pointer;
     }
 
+    /* ============================================================
+       7. SMALL SCREENS: keep this last so it overrides the rules above
+       ============================================================ */
     @media (max-width: 800px) {
       main {
         margin-left: 0;
@@ -240,41 +219,26 @@
   </style>
 </head>
 
-<!-- <body> holds everything you SEE. -->
-
 <body>
 
-  <!-- <header> is a box for the top of a page. The browser doesn't style it specially;
-         the name just describes what's inside. -->
+  <!-- Site title, top-left -->
   <header>
-    <!-- h1 = "heading level 1", the biggest title. There's also h2, h3 ... h6. -->
     <h1>My Universe</h1>
-    <!-- p = paragraph of text. -->
     <p>A personal site. Six sections, one per sphere.</p>
   </header>
 
-  <!-- <nav> = a box for navigation (the menu). -->
-  <nav>
-    <!-- <button> = something clickable. These do nothing yet; JavaScript will
-           make them work in step 3. -->
-  </nav>
+  <!-- Menu, bottom-left. Buttons are created by JavaScript from SECTIONS -->
+  <nav></nav>
 
-  <!-- <main> = the main content of the page. For now it shows one section by hand. -->
+  <!-- Content panel. Hidden on the home view; filled in by openSection() -->
   <main hidden>
     <button class="back">← back</button>
-    <!-- h2 = a slightly smaller heading than h1. -->
-
-    <h2>anime</h2>
-    <p>Shows I love.</p>
-
-    <!-- <div> = "division", a plain box with no meaning. We use it to group things.
-           class="grid" is a LABEL. It does nothing by itself, but in step 2
-           CSS will say "anything labeled grid, lay it out as a grid". -->
-    <div class="grid">
-    </div>
-
+    <h2 id="section-title"></h2>
+    <p id="section-blurb"></p>
+    <div class="grid" id="cards"></div>
   </main>
 
+  <!-- Card popup. Opened by openPopup() -->
   <dialog id="popup">
     <img id="popup-img" alt="">
     <div class="popup-body">
@@ -284,6 +248,7 @@
     </div>
   </dialog>
 
+  <!-- Tell the browser where to download three.js from -->
   <script type="importmap">
     { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
   </script>
@@ -291,373 +256,441 @@
   <script type="module">
     import * as THREE from "three";
 
-    const sections = [
-      { name: "about", radius: 3.2, color: "#7dd3fc", blurb: "loading...", items: [] },
-      { name: "projects", radius: 2.2, color: "#a78bfa", blurb: "beepboop", items: [] },
-      { name: "notes", radius: 1.5, color: "#f472b6", blurb: "brrr", items: [] },
-      { name: "sports", radius: 1.0, color: "#fbbf24", blurb: "aesthetic", items: [] },
+    // ==============================================================
+    // 1. CONTENT: edit this to change the site
+    // ==============================================================
+    // Each section becomes a menu button AND a sphere.
+    //   radius: sphere size (keep them nested: largest first)
+    //   items:  cards in the panel. Either plain text, or
+    //           { title, image, note } for a poster with a popup.
+    const SECTIONS = [
+      { name: "about",    radius: 3.2, color: "#7dd3fc", blurb: "loading...", items: [] },
+      { name: "projects", radius: 2.2, color: "#a78bfa", blurb: "beepboop",   items: [] },
+      { name: "notes",    radius: 1.5, color: "#f472b6", blurb: "brrr",       items: [] },
+      { name: "sports",   radius: 1.0, color: "#fbbf24", blurb: "aesthetic",  items: [] },
       {
-        name: "anime", radius: 0.6, color: "#34d399", blurb: "Shows I love.", items: [{ title: "Frieren", image: "images/frieren.jpg", note: "beyond journey's end" },
-        { title: "Mob Psycho 100", image: "images/mob-psycho-100.jpg" }, { title: "Cowboy Bebop", image: "images/cowboy-bebop.jpg" },
-        { title: "Mushishi", image: "images/mushishi.jpg" }, { title: "Ping Pong the Animation", image: "images/ping-pong-the-animation.jpg" },
-        { title: "Vinland Saga", image: "images/vinland-saga.jpg" }, { title: "Made in Abyss", image: "images/made-in-abyss.jpg" },
-        { title: "Showa Genroku Rakugo Shinju", image: "images/showa-genroku-rakugo-shinju.jpg" }, { title: "Orb", image: "images/orb.jpg" },
-        { title: "Attack on Titan", image: "images/attack-on-titan.jpg" }]
+        name: "anime", radius: 0.6, color: "#34d399", blurb: "Shows I love.",
+        items: [
+          { title: "Frieren",                     image: "images/frieren.jpg", note: "beyond journey's end" },
+          { title: "Mob Psycho 100",              image: "images/mob-psycho-100.jpg" },
+          { title: "Cowboy Bebop",                image: "images/cowboy-bebop.jpg" },
+          { title: "Mushishi",                    image: "images/mushishi.jpg" },
+          { title: "Ping Pong the Animation",     image: "images/ping-pong-the-animation.jpg" },
+          { title: "Vinland Saga",                image: "images/vinland-saga.jpg" },
+          { title: "Made in Abyss",               image: "images/made-in-abyss.jpg" },
+          { title: "Showa Genroku Rakugo Shinju", image: "images/showa-genroku-rakugo-shinju.jpg" },
+          { title: "Orb",                         image: "images/orb.jpg" },
+          { title: "Attack on Titan",             image: "images/attack-on-titan.jpg" },
+        ],
       },
-      { name: "movies", radius: 0.3, color: "#f87171", blurb: "Movies I love.", items: [] },
+      { name: "movies",   radius: 0.3, color: "#f87171", blurb: "Movies I love.", items: [] },
     ];
 
-    const nav = document.querySelector("nav");          // find the first <nav> (same selectors as CSS!)
+    // ==============================================================
+    // 2. SETTINGS: tuning knobs for the 3D scene
+    // ==============================================================
+    const HOME_DISTANCE   = 10;    // how far back the camera sits on the home view
+    const CAMERA_EASE     = 3;     // higher = camera arrives faster
+    const RING_RADIUS     = 4;     // orbit rings, just outside the biggest sphere
+    const DOTS_PER_RING   = 100;
+    const RING_TILTS      = [0, 30, 60, 120, 150];   // degrees (90 skipped: it would be a flat line)
+    const SPARK_COUNT     = 150;
+    const SPARK_TRAVEL    = 0.6;   // how far sparks fly before restarting
+    const DRAG_SPEED      = 0.005; // radians of spin per pixel dragged
+    const CLICK_TOLERANCE = 5;     // pixels of movement before a press counts as a drag
 
-    //
-    let current = null;                                  // which section is open. null = home
-    const main = document.querySelector("main");
+    // Elements the 3D code should ignore clicks and hovers on
+    const UI_ELEMENTS = "button, .card, dialog";
 
-    const popup = document.querySelector("#popup");
+    // ==============================================================
+    // 3. STATE: things that change while the page runs
+    // ==============================================================
+    let current = null;            // the open section (null = home view)
+    let hovered = null;            // the section under the mouse (null = none)
+    const mouse = { x: 0, y: 0 };  // mouse position, -1 to 1 on each axis
+    const spin  = { x: 0, y: 0 };  // extra rotation added by dragging
+    let dragging = false;
+    let dragMoved = 0;             // pixels moved during the current press
 
-    function openPopup(item) {
-      popup.querySelector("#popup-title").textContent = item.title;
-      popup.querySelector("#popup-note").textContent = item.note ?? "";  // ?? "" = use empty text if there's no note
-      const img = popup.querySelector("#popup-img");
-      img.hidden = !item.image;                       // ! = "not": hide the image if this item doesn't have one
-      if (item.image) { img.src = item.image; img.alt = item.title; }
-      popup.showModal();                              // open it: centered, on top of everything, with the rest of the page blocked
-    }
-    document.querySelector("#popup-close").addEventListener("click", () => popup.close());
-    popup.addEventListener("click", (e) => { if (e.target === popup) popup.close(); }); // clicked the dark area outside → close
+    // ==============================================================
+    // 4. PAGE ELEMENTS: looked up once and reused
+    // ==============================================================
+    const nav       = document.querySelector("nav");
+    const main      = document.querySelector("main");
+    const titleEl   = document.querySelector("#section-title");
+    const blurbEl   = document.querySelector("#section-blurb");
+    const cardsEl   = document.querySelector("#cards");
+    const popup     = document.querySelector("#popup");
+    const popupImg  = document.querySelector("#popup-img");
+    const popupTitle = document.querySelector("#popup-title");
+    const popupNote = document.querySelector("#popup-note");
 
+    // ==============================================================
+    // 5. CONTENT PANEL: open/close sections, build cards, popups
+    // ==============================================================
+
+    // Show a section in the panel (the camera flies there in the loop)
     function openSection(section) {
       current = section;
       main.hidden = false;
-      document.querySelector("h2").textContent = section.name;
-      document.querySelector("main p").textContent = section.blurb;
+      titleEl.textContent = section.name;
+      blurbEl.textContent = section.blurb;
       document.body.style.setProperty("--accent", section.color);
 
-      const grid = document.querySelector(".grid");
-      grid.replaceChildren();                          // remove every old card
-      /*
-      section.items.forEach((item, i) => {             // like for…of, but also gives the position i (0, 1, 2…)
-        const card = document.createElement("div");
-        card.animate(
-          [{ opacity: 0, transform: "translateY(16px)" },   // keyframe 1: invisible, 16px lower
-          { opacity: 1, transform: "none" }],               // keyframe 2: visible, in place
-          { duration: 500, delay: 200 + i * 50, easing: "ease-out", fill: "backwards" }
-        );
-        card.className = "card";                       // same as writing class="card" in HTML
-        card.textContent = item;                       // textContent, not innerHTML (remember XSS)
-        grid.appendChild(card);
-      }); */
+      cardsEl.replaceChildren();                       // clear the old cards
+      section.items.forEach((raw, i) => cardsEl.appendChild(buildCard(raw, i)));
 
-      section.items.forEach((raw, i) => {
-        const item = typeof raw === "string" ? { title: raw } : raw;  // typeof tells you what KIND of value: "string", "object"…
-        // turn plain text into an object so the rest of the code
-        // only has to handle one shape ("normalizing")
-        const card = document.createElement("div");
-        card.className = "card";
-
-        if (item.image) {                               // only if this item has a picture
-          const img = document.createElement("img");    // <img> = an image tag
-          img.src = item.image;                         // src = which file to show
-          img.alt = item.title;                         // alt = description for screen readers, or if the file fails to load
-          img.loading = "lazy";                         // don't download it until it's about to be visible
-          card.appendChild(img);
-        }
-
-        const label = document.createElement("span");  // span = a small inline box for text
-        label.textContent = item.title;
-        card.appendChild(label);
-
-        card.addEventListener("click", () => openPopup(item));  // each card opens a popup with ITS item (a closure again)
-        grid.appendChild(card);
-        card.animate(
-          [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }],
-          { duration: 500, delay: 200 + i * 50, easing: "ease-out", fill: "backwards" }
-        );
-      });
-
+      // slide the panel in from the right
       main.animate(
         [{ opacity: 0, transform: "translateX(24px)" }, { opacity: 1, transform: "none" }],
         { duration: 600, easing: "ease-out" }
       );
-      for (const s of sections) s.button.classList.toggle("active", s === section);  // add the class if true, remove it if false
+
+      for (const s of SECTIONS) s.button.classList.toggle("active", s === section);
     }
+
+    // Back to the home view
     function goHome() {
       current = null;
       main.hidden = true;
-      for (const s of sections) s.button.classList.remove("active");
+      for (const s of SECTIONS) s.button.classList.remove("active");
     }
 
-    // 2. clicking a sphere
-    document.querySelector(".back").addEventListener("click", goHome);
-    addEventListener("keydown", (e) => {
-      if (e.key !== "Escape") return;
-      if (popup.open) return;      // a popup is open: let the dialog handle Escape on its own
-      goHome();
-    });
+    // Make one card. `raw` is plain text or a { title, image, note } object.
+    // `index` sets the stagger delay so the cards cascade in.
+    function buildCard(raw, index) {
+      const item = typeof raw === "string" ? { title: raw } : raw;   // treat both shapes the same
 
-    for (const section of sections) {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      if (item.image) {
+        const img = document.createElement("img");
+        img.src = item.image;
+        img.alt = item.title;
+        img.loading = "lazy";                          // download only when it's about to be visible
+        card.appendChild(img);
+      }
+
+      const label = document.createElement("span");
+      label.textContent = item.title;                  // textContent, never innerHTML (safe from XSS)
+      card.appendChild(label);
+
+      card.addEventListener("click", () => openPopup(item));
+
+      // fade and rise into place, 50ms after the previous card
+      card.animate(
+        [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }],
+        { duration: 500, delay: 200 + index * 50, easing: "ease-out", fill: "backwards" }
+      );
+      return card;
+    }
+
+    // Show the popup for one card
+    function openPopup(item) {
+      popupTitle.textContent = item.title;
+      popupNote.textContent = item.note ?? "";         // empty if there's no note
+      popupImg.hidden = !item.image;
+      if (item.image) {
+        popupImg.src = item.image;
+        popupImg.alt = item.title;
+      }
+      popup.showModal();
+    }
+
+    // Menu buttons: one per section, linked both ways so each can find the other
+    for (const section of SECTIONS) {
       const button = document.createElement("button");
+      button.textContent = section.name;
       button.section = section;
       section.button = button;
-      button.textContent = section.name;
-
-      // 1. clicking a nav button
       button.addEventListener("click", () => openSection(section));
       nav.appendChild(button);
     }
 
-    // SCENE, CAMERA, RENDERER
-    const scene = new THREE.Scene();                     // the 3D world: an empty container for objects
+    // Ways to close things
+    document.querySelector(".back").addEventListener("click", goHome);
+    document.querySelector("#popup-close").addEventListener("click", () => popup.close());
+    popup.addEventListener("click", (e) => {
+      if (e.target === popup) popup.close();           // clicked the dark area outside the popup
+    });
+    addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if (popup.open) return;                          // the dialog closes itself on Escape
+      goHome();
+    });
+
+    // ==============================================================
+    // 6. 3D SETUP: scene, camera, renderer, lights
+    // ==============================================================
+    const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
-      50,                                                // field of view in degrees (zoom of the lens)
-      innerWidth / innerHeight,                          // aspect ratio = window width / height
-      0.1, 100                                           // near and far: only draw things between these distances
+      50,                                // field of view (degrees)
+      innerWidth / innerHeight,          // aspect ratio
+      0.1, 100                           // draw things between these distances
     );
-    camera.position.z = 10;                              // step back 10 units so we can see the origin (0,0,0)
+    camera.position.z = HOME_DISTANCE;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // draws with the GPU; alpha = transparent background
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); // sharp on retina screens, capped for speed
-    renderer.setSize(innerWidth, innerHeight);           // fill the window
-    document.body.prepend(renderer.domElement);          // renderer made a <canvas>; put it first in the body
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });  // alpha: see-through background
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));   // sharp on retina, capped for speed
+    renderer.setSize(innerWidth, innerHeight);
+    document.body.prepend(renderer.domElement);              // the <canvas>, behind the page
 
-    // a sphere = shape + skin
-    /*
-    const geometry = new THREE.SphereGeometry(3, 32, 32);  // radius 3, 32 slices around, 32 rings top-to-bottom
-    const material = new THREE.MeshBasicMaterial({ color: "#7dd3fc", wireframe: true }); // draw only the edges
-    const sphere = new THREE.Mesh(geometry, material);   // mesh = geometry + material = a visible object
-    scene.add(sphere);                                     // nothing is drawn unless it's in the scene
-    */
+    scene.add(new THREE.AmbientLight("#ffffff", 0.6));       // soft light from everywhere
+    const light = new THREE.PointLight("#ffffff", 1.5, 0, 0); // a bulb with infinite range, no fade
+    light.position.set(10, 10, 10);
+    scene.add(light);
 
-    // WORLD, SPHERE LOOP, LIGHTS
-
-    //Generate spheres from your data
-    const world = new THREE.Group();      // an invisible container; rotate it and everything inside rotates
+    // Everything that spins lives in `world`, so one rotation moves it all
+    const world = new THREE.Group();
     scene.add(world);
-    let hovered = null;                   // which section the mouse is over (null = none). `let` = can change later
 
-    for (const section of sections) {     // same loop pattern as your buttons!
-      const segments = Math.round(12 + section.radius * 8);   // big spheres get more lines, small ones fewer
+    // ==============================================================
+    // 7. 3D OBJECTS: spheres, orbit rings, sparks
+    // ==============================================================
 
-      const glow = new THREE.Mesh(                            // a soft, see-through colored shell
+    // --- Spheres: a soft glow shell + a wireframe, one pair per section
+    for (const section of SECTIONS) {
+      const segments = Math.round(12 + section.radius * 8);   // fewer lines on small spheres
+
+      const glow = new THREE.Mesh(
         new THREE.SphereGeometry(section.radius, 64, 64),
         new THREE.MeshStandardMaterial({
-          color: section.color, emissive: section.color, emissiveIntensity: 0.4, // emissive = glows on its own
-          transparent: true, opacity: 0.06,
-          side: THREE.DoubleSide,         // draw the inside surface too (we'll fly inside later)
-          depthWrite: false,              // see explanation below
+          color: section.color,
+          emissive: section.color,       // glows on its own
+          emissiveIntensity: 0.4,
+          transparent: true,
+          opacity: 0.06,
+          side: THREE.DoubleSide,        // visible from inside too (the camera flies in)
+          depthWrite: false,             // let inner spheres show through outer ones
         })
       );
-      const wire = new THREE.Mesh(                            // the line pattern on top
+      const wire = new THREE.Mesh(
         new THREE.SphereGeometry(section.radius, segments, segments),
-        new THREE.MeshBasicMaterial({ color: section.color, wireframe: true, transparent: true, opacity: 0.25, depthWrite: false })
+        new THREE.MeshBasicMaterial({
+          color: section.color, wireframe: true, transparent: true, opacity: 0.25, depthWrite: false,
+        })
       );
-      glow.renderOrder = wire.renderOrder = -section.radius;  // draw big spheres first, small ones last
+      glow.renderOrder = wire.renderOrder = -section.radius;  // draw big spheres first
 
       world.add(glow, wire);
-      section.glow = glow;                // store the meshes ON the data object so the loop can find them
+      section.glow = glow;               // keep references for the animation loop
       section.wire = wire;
-      section.offset = Math.random() * 10; // a random number so the spheres don't all breathe in sync
+      section.offset = Math.random() * 10;   // so they don't all breathe in sync
     }
 
-    // Hover: which sphere is the mouse over?
-    const raycaster = new THREE.Raycaster();       // shoots a line from the camera through the mouse into the 3D world
-    const pointer = new THREE.Vector2();           // mouse position, measured the way three.js expects
+    // --- A soft round dot, drawn once on a 2D canvas, used by rings and sparks
+    function makeDotTexture() {
+      const size = 64;
+      const c = document.createElement("canvas");
+      c.width = c.height = size;
+      const g = c.getContext("2d");
+      const grad = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+      grad.addColorStop(0,   "rgba(255,255,255,1)");   // solid center
+      grad.addColorStop(0.3, "rgba(255,255,255,0.8)");
+      grad.addColorStop(1,   "rgba(255,255,255,0)");   // transparent edge
+      g.fillStyle = grad;
+      g.fillRect(0, 0, size, size);
+      return new THREE.CanvasTexture(c);
+    }
+    const dotTexture = makeDotTexture();
+
+    // --- Orbit rings: one circle of dots, reused at 5 tilts
+    const ringPositions = new Float32Array(DOTS_PER_RING * 3);   // x,y,z for each dot
+    for (let i = 0; i < DOTS_PER_RING; i++) {
+      const angle = (i / DOTS_PER_RING) * Math.PI * 2;
+      ringPositions[i * 3]     = RING_RADIUS * Math.cos(angle);
+      ringPositions[i * 3 + 1] = RING_RADIUS * Math.sin(angle);
+      ringPositions[i * 3 + 2] = 0;
+    }
+    const ringGeometry = new THREE.BufferGeometry();
+    ringGeometry.setAttribute("position", new THREE.BufferAttribute(ringPositions, 3));
+
+    // Each ring is drawn twice on the same spot (big & faint + small & bright) = a cheap glow
+    const haloDot = new THREE.PointsMaterial({ size: 0.3,  map: dotTexture, color: "#ffffff", transparent: true, opacity: 0.15, depthWrite: false });
+    const coreDot = new THREE.PointsMaterial({ size: 0.08, map: dotTexture, color: "#ffffff", transparent: true, opacity: 0.9,  depthWrite: false });
+
+    const rings = RING_TILTS.map((degrees, i) => {
+      const ring = new THREE.Group();
+      ring.add(new THREE.Points(ringGeometry, haloDot));
+      ring.add(new THREE.Points(ringGeometry, coreDot));
+      ring.rotation.x = THREE.MathUtils.degToRad(degrees);
+      ring.userData.speed = 0.1 + 0.02 * i;            // each ring a little faster
+      world.add(ring);
+      return ring;
+    });
+
+    // --- Sparks: particles that fly out of the hovered sphere
+    const sparkData = [];
+    for (let i = 0; i < SPARK_COUNT; i++) {
+      const theta = Math.random() * Math.PI * 2;        // around the equator
+      const phi = Math.acos(2 * Math.random() - 1);     // from the pole (this formula spreads them evenly)
+      sparkData.push({
+        dir: new THREE.Vector3().setFromSphericalCoords(1, phi, theta),   // direction, length 1
+        speed: 0.1 + 0.1 * Math.random(),
+        offset: Math.random() * 100,                   // so they don't all start together
+      });
+    }
+    const sparkPositions = new Float32Array(SPARK_COUNT * 3);
+    const sparkGeometry = new THREE.BufferGeometry();
+    sparkGeometry.setAttribute("position", new THREE.BufferAttribute(sparkPositions, 3));
+    const sparks = new THREE.Points(sparkGeometry, new THREE.PointsMaterial({
+      size: 0.12, map: dotTexture, transparent: true, opacity: 0.9, depthWrite: false,
+      blending: THREE.AdditiveBlending,                // overlaps get brighter, like light
+    }));
+    sparks.frustumCulled = false;                      // they move after creation, so never skip drawing them
+    world.add(sparks);
+
+    // ==============================================================
+    // 8. MOUSE: hover, click, and drag-to-spin
+    // ==============================================================
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
     const center = new THREE.Vector3(0, 0, 0);
-    const smallestFirst = [...sections].sort((a, b) => a.radius - b.radius); // a copy, sorted by size
+    const smallestFirst = [...SECTIONS].sort((a, b) => a.radius - b.radius);
 
+    // Which sphere is under the mouse? Measure how close the mouse ray passes to
+    // the center, then pick the smallest sphere that's at least that big.
     function sectionAt(event) {
-      pointer.x = (event.clientX / innerWidth) * 2 - 1;      // pixels → -1 (left edge) to +1 (right edge)
-      pointer.y = -(event.clientY / innerHeight) * 2 + 1;    // pixels → +1 (top) to -1 (bottom). Screen y points down, 3D y points up
+      pointer.x = (event.clientX / innerWidth) * 2 - 1;
+      pointer.y = -(event.clientY / innerHeight) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
-      const d = raycaster.ray.distanceToPoint(center);       // how close the line passes to the center
-      return smallestFirst.find((s) => s.radius >= d) ?? null; // smallest sphere the line passes inside. ?? null = "or nothing"
+      const distance = raycaster.ray.distanceToPoint(center);
+      return smallestFirst.find((s) => s.radius >= distance) ?? null;
     }
 
-    //click vs drag
     addEventListener("pointerdown", (e) => {
-      if (e.target.closest("button, .card, dialog")) return;
+      if (e.target.closest(UI_ELEMENTS)) return;
       dragging = true;
       dragMoved = 0;
     });
-    addEventListener("pointerup", () => { dragging = false; });
+
+    addEventListener("pointerup", () => {
+      dragging = false;
+    });
 
     addEventListener("pointermove", (e) => {
       mouse.x = (e.clientX / innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+
       if (dragging) {
-        spin.y += e.movementX * 0.005;                  // movementX = pixels moved since the last event
-        spin.x += e.movementY * 0.005;
-        dragMoved += Math.abs(e.movementX) + Math.abs(e.movementY); // abs = drop the minus sign
+        spin.y += e.movementX * DRAG_SPEED;
+        spin.x += e.movementY * DRAG_SPEED;
+        dragMoved += Math.abs(e.movementX) + Math.abs(e.movementY);
       }
+
       const navButton = e.target.closest("nav button");
-      if (navButton) hovered = navButton.section;              // hovering a menu item lights up its sphere
-      else hovered = e.target.closest("button, .card, dialog") ? null : sectionAt(e);
+      if (navButton) hovered = navButton.section;      // hovering the menu lights up its sphere
+      else if (e.target.closest(UI_ELEMENTS)) hovered = null;
+      else hovered = sectionAt(e);
+
       document.body.style.cursor = hovered ? "pointer" : "";
     });
 
     addEventListener("click", (e) => {
-      if (e.target.closest("button, .card, dialog")) return;
-      if (dragMoved > 5) return;                        // it was a drag, not a click
-      const s = sectionAt(e);
-      if (!s || s === current) goHome();                // empty space, or the open sphere again → home
-      else openSection(s);
+      if (e.target.closest(UI_ELEMENTS)) return;
+      if (dragMoved > CLICK_TOLERANCE) return;         // that was a drag, not a click
+      const clicked = sectionAt(e);
+      if (!clicked || clicked === current) goHome();   // empty space or the open sphere → home
+      else openSection(clicked);
     });
 
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
 
+    // ==============================================================
+    // 9. ANIMATION: one small function per job, called every frame
+    // ==============================================================
 
-    // update the loop: spin the loop, breathe, react to hover
-    const clock = new THREE.Clock();
-    function loop() {
-      const dt = clock.getDelta();
-      const t = clock.elapsedTime;
-      world.rotation.y = 0.1 * t + spin.y;                      // rotate the container, not each sphere
-      world.rotation.x = 0.05 * t + spin.x;
-
-      for (const s of sections) {
-        const breathe = 1 + 0.008 * Math.sin(2 * t + s.offset); // sin swings between -1 and 1 → scale swings 0.992 to 1.008
-        s.glow.scale.setScalar(breathe);                         // setScalar = same scale on x, y and z
+    // Slow breathing, plus a white pulse on the hovered sphere
+    function animateSpheres(t) {
+      for (const s of SECTIONS) {
+        const breathe = 1 + 0.008 * Math.sin(2 * t + s.offset);
+        s.glow.scale.setScalar(breathe);
         s.wire.scale.setScalar(breathe);
 
-        const hot = s === hovered;                               // === means "is exactly the same thing". true or false
-        s.wire.material.color.set(hot ? "#ffffff" : s.color);    // condition ? ifTrue : ifFalse
+        const hot = s === hovered;
+        s.wire.material.color.set(hot ? "#ffffff" : s.color);
         s.wire.material.opacity = hot ? 0.9 : 0.25;
         s.glow.material.opacity = hot ? 0.15 : 0.06;
-        s.glow.material.emissiveIntensity = hot ? 1.5 + 0.3 * Math.sin(10 * t) : 0.4; // fast pulse while hovered
+        s.glow.material.emissiveIntensity = hot ? 1.5 + 0.3 * Math.sin(10 * t) : 0.4;
+      }
+    }
+
+    // Spin each ring in its own tilted plane
+    function animateRings(t) {
+      for (const ring of rings) ring.rotation.z = t * ring.userData.speed;
+    }
+
+    // Sparks fly out SPARK_TRAVEL units, then restart at the surface (the % trick)
+    function animateSparks(t) {
+      sparks.visible = hovered !== null;
+      if (!hovered) return;
+
+      sparks.material.color.set(hovered.color);
+      for (let i = 0; i < SPARK_COUNT; i++) {
+        const p = sparkData[i];
+        const distance = hovered.radius + ((t * p.speed + p.offset) % SPARK_TRAVEL);
+        sparkPositions[i * 3]     = p.dir.x * distance;
+        sparkPositions[i * 3 + 1] = p.dir.y * distance;
+        sparkPositions[i * 3 + 2] = p.dir.z * distance;
+      }
+      sparkGeometry.attributes.position.needsUpdate = true;   // send the new positions to the GPU
+    }
+
+    // Glide the camera toward its goal: the open sphere, or home
+    const cameraGoal = new THREE.Vector3(0, 0, HOME_DISTANCE);   // where the camera wants to be
+    const lookGoal = new THREE.Vector3();                         // where it wants to look
+    const look = new THREE.Vector3();                             // where it's looking now
+
+    function animateCamera(dt) {
+      if (current) {
+        // Close enough to frame the sphere, shifted so it sits in the left half
+        const distance = current.radius * 3.2 + 1.5;
+        const halfWidth = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * distance * camera.aspect;
+        const shift = camera.aspect > 1 ? halfWidth * 0.5 : 0;  // phones: no shift
+        cameraGoal.set(shift, 0, distance);
+        lookGoal.set(shift, 0, 0);
+      } else {
+        // Home: centered, leaning slightly toward the mouse
+        cameraGoal.set(0, 0, HOME_DISTANCE);
+        lookGoal.set(mouse.x * 0.5, mouse.y * 0.5, 0);
       }
 
-      // rings and sparks
-      for (const ring of rings) ring.rotation.z = t * ring.userData.speed;  // spin each ring in its own tilted plane
+      // Move a fraction of the remaining distance each frame: fast when far, gentle on arrival.
+      // Based on elapsed time, so it feels the same at 60Hz or 120Hz.
+      const k = 1 - Math.exp(-CAMERA_EASE * dt);
+      camera.position.lerp(cameraGoal, k);
+      look.lerp(lookGoal, k);
+      camera.lookAt(look);
+    }
 
-      sparks.visible = hovered !== null;                       // !== means "is not". Show sparks only while hovering
-      if (hovered) {
-        sparks.material.color.set(hovered.color);
-        for (let i = 0; i < SPARKS; i++) {
-          const p = sparkData[i];
-          const dist = hovered.radius + ((t * p.speed + p.offset) % 0.6); // % = remainder: counts up to 0.6, then snaps to 0
-          sparkPositions[i * 3] = p.dir.x * dist;          // position = direction × distance
-          sparkPositions[i * 3 + 1] = p.dir.y * dist;
-          sparkPositions[i * 3 + 2] = p.dir.z * dist;
-        }
-        sparkGeometry.attributes.position.needsUpdate = true;  // "the numbers changed, send them to the GPU again"
-      }
-      updateCamera(dt);                                        // step 4
+    // The main loop: update everything, draw, repeat before the next screen refresh
+    const clock = new THREE.Clock();
+    function loop() {
+      const dt = clock.getDelta();       // seconds since the last frame
+      const t = clock.elapsedTime;       // seconds since the start
+
+      world.rotation.y = 0.1 * t + spin.y;
+      world.rotation.x = 0.05 * t + spin.x;
+      animateSpheres(t);
+      animateRings(t);
+      animateSparks(t);
+      animateCamera(dt);
 
       renderer.render(scene, camera);
       requestAnimationFrame(loop);
     }
 
-    // Light
-    scene.add(new THREE.AmbientLight("#ffffff", 0.6));           // soft light from everywhere
-    const light = new THREE.PointLight("#ffffff", 1.5, 0, 0);    // a bulb: color, brightness, range (0 = infinite), fade (0 = none)
-    light.position.set(10, 10, 10);                              // up, right, toward you
-    scene.add(light);
-
-    //Drag to spin
-    const spin = { x: 0, y: 0 };      // extra rotation from dragging
-    let dragging = false;
-    let dragMoved = 0;                // how many pixels the mouse moved during this press
-
-    addEventListener("resize", () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();          // camera settings are cached; tell it to recalculate
-      renderer.setSize(innerWidth, innerHeight);
-    });
-
-    // dot texture
-    function makeDotTexture() {
-      const c = document.createElement("canvas");   // an off-screen canvas, never added to the page
-      c.width = c.height = 64;                      // 64×64 pixels is plenty for a dot
-      const g = c.getContext("2d");                 // the 2D paintbrush, like in Dodge
-      const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32); // fade from the center (radius 0) to the edge (radius 32)
-      grad.addColorStop(0, "rgba(255,255,255,1)");   // center: solid white
-      grad.addColorStop(0.3, "rgba(255,255,255,0.8)");
-      grad.addColorStop(1, "rgba(255,255,255,0)");   // edge: fully transparent
-      g.fillStyle = grad;
-      g.fillRect(0, 0, 64, 64);
-      return new THREE.CanvasTexture(c);            // turn the picture into something the GPU can use
-    }
-    const dotTexture = makeDotTexture();
-
-    // ORBIT RINGS: 5 dots in a circular ring
-    const dots = new Float32Array(100 * 3);          // a fast list of plain numbers: x,y,z, x,y,z, … for 100 dots
-    for (let i = 0; i < 100; i++) {                  // classic loop: i counts 0, 1, 2 … 99
-      const angle = (i / 100) * Math.PI * 2;         // spread the dots evenly around a full circle (2π radians)
-      dots[i * 3] = 4 * Math.cos(angle);         // x  ┐ cos and sin of an angle give a point on a circle.
-      dots[i * 3 + 1] = 4 * Math.sin(angle);         // y  ┘ Multiply by 4 = radius 4, just outside the biggest sphere
-      dots[i * 3 + 2] = 0;                           // z: flat
-    }
-    const ringGeometry = new THREE.BufferGeometry(); // geometry from raw points instead of a ready-made shape
-    ringGeometry.setAttribute("position", new THREE.BufferAttribute(dots, 3)); // "read these numbers 3 at a time as positions"
-
-    const haloDot = new THREE.PointsMaterial({ size: 0.3, map: dotTexture, color: "#ffffff", transparent: true, opacity: 0.15, depthWrite: false });
-    const coreDot = new THREE.PointsMaterial({ size: 0.08, map: dotTexture, color: "#ffffff", transparent: true, opacity: 0.9, depthWrite: false });
-
-    const tilts = [0, 30, 60, 120, 150];             // degrees. 90 is skipped (it would be seen edge-on as a line)
-    const rings = [];
-    for (let i = 0; i < tilts.length; i++) {
-      const ring = new THREE.Group();
-      ring.add(new THREE.Points(ringGeometry, haloDot));   // big, faint dots ┐ drawn on the same spot =
-      ring.add(new THREE.Points(ringGeometry, coreDot));   // small, bright   ┘ a fake "glow" for free
-      ring.rotation.x = THREE.MathUtils.degToRad(tilts[i]); // tilt the whole ring
-      ring.userData.speed = 0.1 + 0.02 * i;                 // userData = a spot for your own data. Each ring is a bit faster
-      world.add(ring);
-      rings.push(ring);                                     // push = add to the end of an array
-    }
-
-    //SPARKS
-    const SPARKS = 150;                               // ALL_CAPS = a convention for "this number never changes"
-    const sparkData = [];
-    for (let i = 0; i < SPARKS; i++) {
-      const theta = Math.random() * Math.PI * 2;      // random angle around the equator
-      const phi = Math.acos(2 * Math.random() - 1);   // random angle from the north pole (see note below)
-      sparkData.push({
-        dir: new THREE.Vector3().setFromSphericalCoords(1, phi, theta), // a direction: an arrow of length 1
-        speed: 0.1 + 0.1 * Math.random(),
-        offset: Math.random() * 100,                  // so they don't all start together
-      });
-    }
-    const sparkPositions = new Float32Array(SPARKS * 3);
-    const sparkGeometry = new THREE.BufferGeometry();
-    sparkGeometry.setAttribute("position", new THREE.BufferAttribute(sparkPositions, 3));
-    const sparks = new THREE.Points(sparkGeometry, new THREE.PointsMaterial({
-      size: 0.12, map: dotTexture, transparent: true, opacity: 0.9, depthWrite: false,
-      blending: THREE.AdditiveBlending,               // add colors on top of what's behind, so overlaps get brighter, like light
-    }));
-    sparks.frustumCulled = false;                     // see note below
-    world.add(sparks);
-
-    // The loop: real time steps, plus rings and sparks
-
-    // CAMERA
-    const mouse = { x: 0, y: 0 };
-    const camGoal = new THREE.Vector3(0, 0, 10);    // where the camera wants to BE
-    const lookGoal = new THREE.Vector3();           // where it wants to LOOK
-    const look = new THREE.Vector3();               // where it's looking right now
-
-    function updateCamera(dt) {
-      if (current) {
-        const distance = current.radius * 3.2 + 1.5;                  // small sphere → fly in close
-        const halfWidth = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * distance * camera.aspect; // how wide the view is at that distance
-        const shift = camera.aspect > 1 ? halfWidth * 0.5 : 0;        // on a wide screen, slide right so the sphere sits in the LEFT half
-        camGoal.set(shift, 0, distance);
-        lookGoal.set(shift, 0, 0);
-      } else {
-        camGoal.set(0, 0, 10);
-        lookGoal.set(mouse.x * 0.5, mouse.y * 0.5, 0);                // home: lean slightly toward the mouse
-      }
-      const k = 1 - Math.exp(-3 * dt);              // fraction of the remaining distance to move this frame
-      camera.position.lerp(camGoal, k);             // lerp = move part of the way toward a target
-      look.lerp(lookGoal, k);
-      camera.lookAt(look);
-    }
-
+    // ==============================================================
+    // 10. START: everything above exists now, so begin animating
+    // ==============================================================
     loop();
   </script>
 
 </body>
 
 </html>
-<!--
-  What you should see: plain black text on white, like a 1995 webpage.
-  That's correct! HTML alone only gives STRUCTURE. Step 2 adds style.
--->
