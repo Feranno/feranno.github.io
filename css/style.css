@@ -170,49 +170,95 @@ main h2 {
 }
 
 
-/* ---------- 7. Popup: details for one card ---------- */
+/* ---------- 7. Detail view: full poster + title and notes on the side ---------- */
+
+/* The dialog covers the whole screen; the spheres show through, blurred */
 #popup {
-  padding: 0;                        /* so only clicks OUTSIDE hit the dialog itself */
+  width: 100vw;
+  height: 100vh;
+  max-width: none;                   /* undo the browser's default dialog size limits */
+  max-height: none;
+  margin: 0;
+  padding: 0;
   border: none;
-  border-radius: 16px;
-  background: var(--panel);
+  background: rgba(11, 13, 23, 0.72);
+  backdrop-filter: blur(10px);
   color: var(--text);
-  width: min(420px, 90vw);
   overflow: hidden;
 }
 
 #popup::backdrop {
-  background: rgba(5, 6, 12, 0.6);
-  backdrop-filter: blur(6px);
+  background: transparent;           /* the dialog itself does the dimming */
+}
+
+.detail-back {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 1;
+}
+
+/* Poster and text side by side, centered */
+.detail {
+  box-sizing: border-box;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 56px;
+  padding: 80px 48px;
 }
 
 #popup img {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  vertical-align: top;
+  max-height: 80vh;                  /* as big as fits... */
+  max-width: min(45vw, 560px);
+  width: auto;
+  height: auto;
+  object-fit: contain;               /* ...and never cropped */
+  border-radius: 12px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
 }
 
-.popup-body {
-  padding: 20px 24px 24px;
+.detail-text {
+  max-width: 380px;
+}
+
+.detail-kicker {                     /* small section label above the title */
+  margin: 0 0 8px;
+  color: var(--accent, var(--muted));
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 #popup h3 {
-  font-size: 32px;
-  margin: 0 0 8px;
+  font-size: 44px;
+  line-height: 1.1;
+  margin: 0 0 16px;
 }
 
-#popup p {
+#popup-note {
+  margin: 0;
   color: var(--soft);
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
-#popup-close {
-  background: none;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 6px 16px;
-  cursor: pointer;
+/* Entrance: poster rises and grows in, text follows a beat later */
+@media (prefers-reduced-motion: no-preference) {
+  #popup[open] img {
+    animation: poster-in 0.5s ease-out;
+  }
+  #popup[open] .detail-text {
+    animation: text-in 0.5s 0.15s ease-out backwards;
+  }
+}
+
+@keyframes poster-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+}
+
+@keyframes text-in {
+  from { opacity: 0; transform: translateX(16px); }
 }
 
 
@@ -245,5 +291,19 @@ main h2 {
   main {
     margin-left: 0;
     padding: 140px 16px 80px;
+  }
+
+  /* Detail view: poster on top, text below, scroll if the note is long */
+  .detail {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 24px;
+    padding: 72px 20px 40px;
+    overflow-y: auto;
+  }
+
+  #popup img {
+    max-width: 80vw;
+    max-height: 60vh;
   }
 }

@@ -17,6 +17,7 @@ const popup = document.querySelector("#popup");
 const popupImg = document.querySelector("#popup-img");
 const popupTitle = document.querySelector("#popup-title");
 const popupNote = document.querySelector("#popup-note");
+const popupKicker = document.querySelector("#popup-kicker");
 
 // Menu buttons ↔ sections, so each can find the other
 const buttonFor = new Map();     // section → button
@@ -93,9 +94,10 @@ function buildCard(raw, index) {
 }
 
 
-// ---------- Popup ----------
+// ---------- Detail view (full poster + notes) ----------
 
 function openPopup(item) {
+  popupKicker.textContent = state.current?.name ?? "";   // e.g. "anime"
   popupTitle.textContent = item.title;
   popupNote.textContent = item.note ?? "";         // empty if there's no note
   popupImg.hidden = !item.image;
@@ -133,7 +135,8 @@ export function initPanel() {
   document.querySelector(".back").addEventListener("click", goHome);
   document.querySelector("#popup-close").addEventListener("click", () => popup.close());
   popup.addEventListener("click", (e) => {
-    if (e.target === popup) popup.close();         // clicked the dark area outside the popup
+    // clicked empty space (not the poster, text, or back button) → close
+    if (e.target === popup || e.target.classList.contains("detail")) popup.close();
   });
   addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
