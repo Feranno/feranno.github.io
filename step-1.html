@@ -59,7 +59,7 @@
     }
 
     main {
-      margin-left: 60%;
+      margin-left: clamp(280px, 45%, 50%);
       padding: 120px 48px 80px 0;
     }
 
@@ -78,6 +78,10 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 6px;
+    }
+
+    nav button {
+      text-shadow: 0 0 8px #0b0d17;
     }
 
     nav button {
@@ -104,7 +108,36 @@
       color: white;
     }
 
+    .card {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
 
+    /* overflow: hidden = crop anything sticking out */
+    .card img {
+      position: absolute;
+      inset: 0;
+      /* inset: 0 = stretch to all four edges of the card */
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* fill the box and crop the extra, instead of squashing the image */
+      transition: transform 0.5s, filter 0.5s;
+    }
+
+    .card span {
+      position: relative;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+    }
+
+    /* stays on top of the image, readable on any picture */
+    .card:hover img {
+      transform: scale(1.1);
+      filter: brightness(1.2);
+    }
+
+    /* zoom and brighten inside the cropped frame */
 
     .card {
       aspect-ratio: 3 / 4;
@@ -127,7 +160,8 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      /* grid-template-columns: repeat(3, 1fr); */
+      grid-template-columns: repeat(auto-fill, minmax(var(--card-min, 160px), 1fr));
       gap: 12px;
     }
 
@@ -145,6 +179,63 @@
     h2 {
       font-size: 64px;
       margin: 0 0 8px;
+    }
+
+    #popup {
+      padding: 0;
+      border: none;
+      border-radius: 16px;
+      background: #141829;
+      color: white;
+      width: min(420px, 90vw);
+      overflow: hidden;
+    }
+
+    /* min() = whichever is smaller. 90vw = 90% of the window width */
+    #popup::backdrop {
+      background: rgba(5, 6, 12, 0.6);
+      backdrop-filter: blur(6px);
+    }
+
+    /* the dimmed, blurred page behind it */
+    #popup img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      vertical-align: top;
+    }
+
+    .popup-body {
+      padding: 20px 24px 24px;
+    }
+
+    #popup h3 {
+      font-family: "Instrument Serif", serif;
+      font-weight: 400;
+      font-size: 32px;
+      margin: 0 0 8px;
+    }
+
+    #popup p {
+      color: #b8bccf;
+      line-height: 1.6;
+    }
+
+    #popup-close {
+      background: none;
+      border: 1px solid #3a3f5c;
+      color: white;
+      border-radius: 999px;
+      padding: 6px 16px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    @media (max-width: 800px) {
+      main {
+        margin-left: 0;
+        padding: 140px 16px 80px;
+      }
     }
   </style>
 </head>
@@ -184,6 +275,15 @@
 
   </main>
 
+  <dialog id="popup">
+    <img id="popup-img" alt="">
+    <div class="popup-body">
+      <h3 id="popup-title"></h3>
+      <p id="popup-note"></p>
+      <button id="popup-close">close</button>
+    </div>
+  </dialog>
+
   <script type="importmap">
     { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
   </script>
@@ -196,7 +296,14 @@
       { name: "projects", radius: 2.2, color: "#a78bfa", blurb: "beepboop", items: [] },
       { name: "notes", radius: 1.5, color: "#f472b6", blurb: "brrr", items: [] },
       { name: "sports", radius: 1.0, color: "#fbbf24", blurb: "aesthetic", items: [] },
-      { name: "anime", radius: 0.6, color: "#34d399", blurb: "Shows I love.", items: ["Frieren", "Mob Psycho 100", "Cowboy Bebop", "Mushishi", "Ping Pong the Animation", "Vinland Saga", "Made in Abyss"] },
+      {
+        name: "anime", radius: 0.6, color: "#34d399", blurb: "Shows I love.", items: [{ title: "Frieren", image: "images/frieren.jpg", note: "beyond journey's end" },
+        { title: "Mob Psycho 100", image: "images/mob-psycho-100.jpg" }, { title: "Cowboy Bebop", image: "images/cowboy-bebop.jpg" },
+        { title: "Mushishi", image: "images/mushishi.jpg" }, { title: "Ping Pong the Animation", image: "images/ping-pong-the-animation.jpg" },
+        { title: "Vinland Saga", image: "images/vinland-saga.jpg" }, { title: "Made in Abyss", image: "images/made-in-abyss.jpg" },
+        { title: "Showa Genroku Rakugo Shinju", image: "images/showa-genroku-rakugo-shinju.jpg" }, { title: "Orb", image: "images/orb.jpg" },
+        { title: "Attack on Titan", image: "images/attack-on-titan.jpg" }]
+      },
       { name: "movies", radius: 0.3, color: "#f87171", blurb: "Movies I love.", items: [] },
     ];
 
@@ -205,6 +312,19 @@
     //
     let current = null;                                  // which section is open. null = home
     const main = document.querySelector("main");
+
+    const popup = document.querySelector("#popup");
+
+    function openPopup(item) {
+      popup.querySelector("#popup-title").textContent = item.title;
+      popup.querySelector("#popup-note").textContent = item.note ?? "";  // ?? "" = use empty text if there's no note
+      const img = popup.querySelector("#popup-img");
+      img.hidden = !item.image;                       // ! = "not": hide the image if this item doesn't have one
+      if (item.image) { img.src = item.image; img.alt = item.title; }
+      popup.showModal();                              // open it: centered, on top of everything, with the rest of the page blocked
+    }
+    document.querySelector("#popup-close").addEventListener("click", () => popup.close());
+    popup.addEventListener("click", (e) => { if (e.target === popup) popup.close(); }); // clicked the dark area outside → close
 
     function openSection(section) {
       current = section;
@@ -215,6 +335,7 @@
 
       const grid = document.querySelector(".grid");
       grid.replaceChildren();                          // remove every old card
+      /*
       section.items.forEach((item, i) => {             // like for…of, but also gives the position i (0, 1, 2…)
         const card = document.createElement("div");
         card.animate(
@@ -225,6 +346,33 @@
         card.className = "card";                       // same as writing class="card" in HTML
         card.textContent = item;                       // textContent, not innerHTML (remember XSS)
         grid.appendChild(card);
+      }); */
+
+      section.items.forEach((raw, i) => {
+        const item = typeof raw === "string" ? { title: raw } : raw;  // typeof tells you what KIND of value: "string", "object"…
+        // turn plain text into an object so the rest of the code
+        // only has to handle one shape ("normalizing")
+        const card = document.createElement("div");
+        card.className = "card";
+
+        if (item.image) {                               // only if this item has a picture
+          const img = document.createElement("img");    // <img> = an image tag
+          img.src = item.image;                         // src = which file to show
+          img.alt = item.title;                         // alt = description for screen readers, or if the file fails to load
+          img.loading = "lazy";                         // don't download it until it's about to be visible
+          card.appendChild(img);
+        }
+
+        const label = document.createElement("span");  // span = a small inline box for text
+        label.textContent = item.title;
+        card.appendChild(label);
+
+        card.addEventListener("click", () => openPopup(item));  // each card opens a popup with ITS item (a closure again)
+        grid.appendChild(card);
+        card.animate(
+          [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }],
+          { duration: 500, delay: 200 + i * 50, easing: "ease-out", fill: "backwards" }
+        );
       });
 
       main.animate(
@@ -241,7 +389,11 @@
 
     // 2. clicking a sphere
     document.querySelector(".back").addEventListener("click", goHome);
-    addEventListener("keydown", (e) => { if (e.key === "Escape") goHome(); });
+    addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if (popup.open) return;      // a popup is open: let the dialog handle Escape on its own
+      goHome();
+    });
 
     for (const section of sections) {
       const button = document.createElement("button");
@@ -323,7 +475,7 @@
 
     //click vs drag
     addEventListener("pointerdown", (e) => {
-      if (e.target.closest("button, .card")) return;
+      if (e.target.closest("button, .card, dialog")) return;
       dragging = true;
       dragMoved = 0;
     });
@@ -339,12 +491,12 @@
       }
       const navButton = e.target.closest("nav button");
       if (navButton) hovered = navButton.section;              // hovering a menu item lights up its sphere
-      else hovered = e.target.closest("button, .card") ? null : sectionAt(e);
+      else hovered = e.target.closest("button, .card, dialog") ? null : sectionAt(e);
       document.body.style.cursor = hovered ? "pointer" : "";
     });
 
     addEventListener("click", (e) => {
-      if (e.target.closest("button, .card")) return;
+      if (e.target.closest("button, .card, dialog")) return;
       if (dragMoved > 5) return;                        // it was a drag, not a click
       const s = sectionAt(e);
       if (!s || s === current) goHome();                // empty space, or the open sphere again → home
