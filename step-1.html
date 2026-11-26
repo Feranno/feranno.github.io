@@ -88,6 +88,18 @@
       cursor: pointer;
     }
 
+    nav button.active {
+      color: white;
+    }
+
+    /* button AND .active, with no space = both at once */
+    nav button.active::before {
+      content: "● ";
+      color: var(--accent);
+    }
+
+    /* ::before inserts content before the text */
+
     nav button:hover {
       color: white;
     }
@@ -168,15 +180,8 @@
            class="grid" is a LABEL. It does nothing by itself, but in step 2
            CSS will say "anything labeled grid, lay it out as a grid". -->
     <div class="grid">
-      <!-- Each poster is a box labeled "card". -->
-      <div class="card">Frieren</div>
-      <div class="card">Mob Psycho 100</div>
-      <div class="card">Cowboy Bebop</div>
-      <div class="card">Mushishi</div>
-      <div class="card">Ping Pong the Animation</div>
-      <div class="card">Vinland Saga</div>
-      <div class="card">Made in Abyss</div>
     </div>
+
   </main>
 
   <script type="importmap">
@@ -187,12 +192,12 @@
     import * as THREE from "three";
 
     const sections = [
-      { name: "about", radius: 3.2, color: "#7dd3fc", blurb: "loading..." },
-      { name: "projects", radius: 2.2, color: "#a78bfa", blurb: "beepboop" },
-      { name: "notes", radius: 1.5, color: "#f472b6", blurb: "brrr" },
-      { name: "sports", radius: 1.0, color: "#fbbf24", blurb: "aesthetic" },
-      { name: "anime", radius: 0.6, color: "#34d399", blurb: "Shows I love." },
-      { name: "movies", radius: 0.3, color: "#f87171", blurb: "Movies I love." },
+      { name: "about", radius: 3.2, color: "#7dd3fc", blurb: "loading...", items: [] },
+      { name: "projects", radius: 2.2, color: "#a78bfa", blurb: "beepboop", items: [] },
+      { name: "notes", radius: 1.5, color: "#f472b6", blurb: "brrr", items: [] },
+      { name: "sports", radius: 1.0, color: "#fbbf24", blurb: "aesthetic", items: [] },
+      { name: "anime", radius: 0.6, color: "#34d399", blurb: "Shows I love.", items: ["Frieren", "Mob Psycho 100", "Cowboy Bebop", "Mushishi", "Ping Pong the Animation", "Vinland Saga", "Made in Abyss"] },
+      { name: "movies", radius: 0.3, color: "#f87171", blurb: "Movies I love.", items: [] },
     ];
 
     const nav = document.querySelector("nav");          // find the first <nav> (same selectors as CSS!)
@@ -207,10 +212,31 @@
       document.querySelector("h2").textContent = section.name;
       document.querySelector("main p").textContent = section.blurb;
       document.body.style.setProperty("--accent", section.color);
+
+      const grid = document.querySelector(".grid");
+      grid.replaceChildren();                          // remove every old card
+      section.items.forEach((item, i) => {             // like for…of, but also gives the position i (0, 1, 2…)
+        const card = document.createElement("div");
+        card.animate(
+          [{ opacity: 0, transform: "translateY(16px)" },   // keyframe 1: invisible, 16px lower
+          { opacity: 1, transform: "none" }],               // keyframe 2: visible, in place
+          { duration: 500, delay: 200 + i * 50, easing: "ease-out", fill: "backwards" }
+        );
+        card.className = "card";                       // same as writing class="card" in HTML
+        card.textContent = item;                       // textContent, not innerHTML (remember XSS)
+        grid.appendChild(card);
+      });
+
+      main.animate(
+        [{ opacity: 0, transform: "translateX(24px)" }, { opacity: 1, transform: "none" }],
+        { duration: 600, easing: "ease-out" }
+      );
+      for (const s of sections) s.button.classList.toggle("active", s === section);  // add the class if true, remove it if false
     }
     function goHome() {
       current = null;
       main.hidden = true;
+      for (const s of sections) s.button.classList.remove("active");
     }
 
     // 2. clicking a sphere
@@ -219,6 +245,8 @@
 
     for (const section of sections) {
       const button = document.createElement("button");
+      button.section = section;
+      section.button = button;
       button.textContent = section.name;
 
       // 1. clicking a nav button
@@ -309,7 +337,9 @@
         spin.x += e.movementY * 0.005;
         dragMoved += Math.abs(e.movementX) + Math.abs(e.movementY); // abs = drop the minus sign
       }
-      hovered = e.target.closest("button, .card") ? null : sectionAt(e);
+      const navButton = e.target.closest("nav button");
+      if (navButton) hovered = navButton.section;              // hovering a menu item lights up its sphere
+      else hovered = e.target.closest("button, .card") ? null : sectionAt(e);
       document.body.style.cursor = hovered ? "pointer" : "";
     });
 
@@ -381,6 +411,21 @@
       renderer.setSize(innerWidth, innerHeight);
     });
 
+    // dot texture
+    function makeDotTexture() {
+      const c = document.createElement("canvas");   // an off-screen canvas, never added to the page
+      c.width = c.height = 64;                      // 64×64 pixels is plenty for a dot
+      const g = c.getContext("2d");                 // the 2D paintbrush, like in Dodge
+      const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32); // fade from the center (radius 0) to the edge (radius 32)
+      grad.addColorStop(0, "rgba(255,255,255,1)");   // center: solid white
+      grad.addColorStop(0.3, "rgba(255,255,255,0.8)");
+      grad.addColorStop(1, "rgba(255,255,255,0)");   // edge: fully transparent
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 64, 64);
+      return new THREE.CanvasTexture(c);            // turn the picture into something the GPU can use
+    }
+    const dotTexture = makeDotTexture();
+
     // ORBIT RINGS: 5 dots in a circular ring
     const dots = new Float32Array(100 * 3);          // a fast list of plain numbers: x,y,z, x,y,z, … for 100 dots
     for (let i = 0; i < 100; i++) {                  // classic loop: i counts 0, 1, 2 … 99
@@ -392,8 +437,8 @@
     const ringGeometry = new THREE.BufferGeometry(); // geometry from raw points instead of a ready-made shape
     ringGeometry.setAttribute("position", new THREE.BufferAttribute(dots, 3)); // "read these numbers 3 at a time as positions"
 
-    const haloDot = new THREE.PointsMaterial({ size: 0.15, color: "#ffffff", transparent: true, opacity: 0.15, depthWrite: false });
-    const coreDot = new THREE.PointsMaterial({ size: 0.05, color: "#ffffff", transparent: true, opacity: 0.9, depthWrite: false });
+    const haloDot = new THREE.PointsMaterial({ size: 0.3, map: dotTexture, color: "#ffffff", transparent: true, opacity: 0.15, depthWrite: false });
+    const coreDot = new THREE.PointsMaterial({ size: 0.08, map: dotTexture, color: "#ffffff", transparent: true, opacity: 0.9, depthWrite: false });
 
     const tilts = [0, 30, 60, 120, 150];             // degrees. 90 is skipped (it would be seen edge-on as a line)
     const rings = [];
@@ -423,7 +468,7 @@
     const sparkGeometry = new THREE.BufferGeometry();
     sparkGeometry.setAttribute("position", new THREE.BufferAttribute(sparkPositions, 3));
     const sparks = new THREE.Points(sparkGeometry, new THREE.PointsMaterial({
-      size: 0.06, transparent: true, opacity: 0.9, depthWrite: false,
+      size: 0.12, map: dotTexture, transparent: true, opacity: 0.9, depthWrite: false,
       blending: THREE.AdditiveBlending,               // add colors on top of what's behind, so overlaps get brighter, like light
     }));
     sparks.frustumCulled = false;                     // see note below
