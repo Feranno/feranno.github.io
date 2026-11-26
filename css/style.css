@@ -96,6 +96,27 @@ nav button.active::before {         /* colored dot before the open section */
   color: var(--accent);
 }
 
+/* Music switch, top-right */
+#sound-toggle {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 12px;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  text-shadow: 0 0 8px var(--bg);
+}
+
+#sound-toggle:hover,
+#sound-toggle[aria-pressed="true"] {
+  color: var(--text);
+}
+
 
 /* ---------- 5. Content panel: the right side of the screen ---------- */
 main {

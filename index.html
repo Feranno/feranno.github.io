@@ -48,9 +48,14 @@
 
   <!-- Site title, top-left -->
   <header>
-    <h1 style="font-family: 'Times New Roman', Times, serif;">Thauma (θαῦμα)</h1>
-    <p style="font-family: 'Times New Roman', Times, serif;"> n. wonder</p>
+    <h1 style="font-family: 'Times New Roman', Times, serif;">Feranno Liu</h1>
+    <p style="font-family: 'Times New Roman', Times, serif;">Thauma (θαῦμα) n. wonder</p>
   </header>
+
+  <!-- Background music + its on/off switch, top-right. The switch stays hidden
+       until the track loads, so a missing file shows nothing. See js/audio.js -->
+  <audio id="music" src="music/chopin-ballade-1.mp3" loop preload="metadata"></audio>
+  <button type="button" id="sound-toggle" aria-pressed="false" hidden>♪ sound off</button>
 
   <!-- Menu, bottom-left. Buttons are generated from js/content.js -->
   <nav aria-label="Sections"></nav>
