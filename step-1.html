@@ -1,0 +1,334 @@
+<!doctype html>
+<!--
+  ███ STEP 1 · HTML: the skeleton ███
+
+  A website is just TEXT FILES that a browser reads. There are 3 languages:
+    HTML        = WHAT is on the page   (this step)
+    CSS         = HOW it looks          (step 2)
+    JavaScript  = WHAT it does          (step 3)
+
+  HTML is made of TAGS. A tag looks like <name> ... </name>.
+    <p>Hello</p>        "p" means paragraph. <p> opens it, </p> closes it.
+    Tags go inside tags, like boxes in boxes. That nesting is the whole idea.
+  Some tags have ATTRIBUTES, extra info written inside the opening tag:
+    <html lang="en">    attribute "lang" with value "en"
+
+  Anything between and --> <!-- (like this text) is a COMMENT.
+  The browser ignores it. It's a note for humans.
+
+  Try it: change some text below, save, and reload the page.
+-->
+
+<!-- The first line above, <!doctype html>, tells the browser "this is modern HTML". -->
+
+<!-- <html> is the outermost box. Everything else goes inside it. -->
+<html lang="en">
+
+<!-- <head> holds info ABOUT the page. Nothing in here is shown on the page itself. -->
+
+<head>
+  <!-- Which alphabet the file uses. utf-8 covers every language and emoji. -->
+  <meta charset="utf-8">
+  <!-- The text shown on the browser tab. -->
+  <title>My Universe</title>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&display=swap">
+  <style>
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    header,
+    nav,
+    main {
+      z-index: 1;
+    }
+
+    main {
+      position: relative;
+    }
+
+    /* z-index only works on positioned elements */
+
+    body {
+      background: #0b0d17;
+      color: white;
+    }
+
+    main {
+      margin-left: 60%;
+      padding: 120px 48px 80px 0;
+    }
+
+    /* 4 values = top right bottom left (clockwise) */
+    header {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    nav button {
+      background: none;
+      border: none;
+      color: #8a8fa8;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    nav button:hover {
+      color: white;
+    }
+
+
+
+    .card {
+      aspect-ratio: 3 / 4;
+      /* poster shape: height follows width */
+      display: flex;
+      align-items: flex-end;
+      /* push the title to the bottom */
+      padding: 12px;
+      border-radius: 10px;
+      background: linear-gradient(160deg, var(--accent, #34d399), #0b0d17);
+      transition: transform 0.2s;
+      /* animate any change to transform */
+    }
+
+    .card:hover {
+      transform: scale(1.08);
+    }
+
+    /* :hover = "while the mouse is over it" */
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+    }
+
+    /* merge this into your existing body rule */
+    h1,
+    h2 {
+      font-family: "Instrument Serif", serif;
+      font-weight: 400;
+    }
+
+    h2 {
+      font-size: 64px;
+      margin: 0 0 8px;
+    }
+  </style>
+</head>
+
+<!-- <body> holds everything you SEE. -->
+
+<body>
+
+  <!-- <header> is a box for the top of a page. The browser doesn't style it specially;
+         the name just describes what's inside. -->
+  <header>
+    <!-- h1 = "heading level 1", the biggest title. There's also h2, h3 ... h6. -->
+    <h1>My Universe</h1>
+    <!-- p = paragraph of text. -->
+    <p>A personal site. Six sections, one per sphere.</p>
+  </header>
+
+  <!-- <nav> = a box for navigation (the menu). -->
+  <nav>
+    <!-- <button> = something clickable. These do nothing yet; JavaScript will
+           make them work in step 3. -->
+  </nav>
+
+  <!-- <main> = the main content of the page. For now it shows one section by hand. -->
+  <main>
+    <!-- h2 = a slightly smaller heading than h1. -->
+
+    <h2>anime</h2>
+    <p>Shows I love.</p>
+
+    <!-- <div> = "division", a plain box with no meaning. We use it to group things.
+           class="grid" is a LABEL. It does nothing by itself, but in step 2
+           CSS will say "anything labeled grid, lay it out as a grid". -->
+    <div class="grid">
+      <!-- Each poster is a box labeled "card". -->
+      <div class="card">Frieren</div>
+      <div class="card">Mob Psycho 100</div>
+      <div class="card">Cowboy Bebop</div>
+      <div class="card">Mushishi</div>
+      <div class="card">Ping Pong the Animation</div>
+      <div class="card">Vinland Saga</div>
+      <div class="card">Made in Abyss</div>
+    </div>
+  </main>
+
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
+  </script>
+
+  <script type="module">
+    import * as THREE from "three";
+
+    const sections = [
+      { name: "about", radius: 3.2, color: "#7dd3fc", blurb: "loading..." },
+      { name: "projects", radius: 2.2, color: "#a78bfa", blurb: "beepboop" },
+      { name: "notes", radius: 1.5, color: "#f472b6", blurb: "brrr" },
+      { name: "sports", radius: 1.0, color: "#fbbf24", blurb: "aesthetic" },
+      { name: "anime", radius: 0.6, color: "#34d399", blurb: "Shows I love." },
+      { name: "movies", radius: 0.3, color: "#f87171", blurb: "Movies I love." },
+    ];
+
+    const nav = document.querySelector("nav");          // find the first <nav> (same selectors as CSS!)
+
+    function openSection(section) {                       // the click code, now with a name
+      document.querySelector("h2").textContent = section.name;
+      document.querySelector("main p").textContent = section.blurb;
+      document.body.style.setProperty("--accent", section.color);
+    }
+
+    for (const section of sections) {
+      const button = document.createElement("button");
+      button.textContent = section.name;
+      
+      // 1. clicking a nav button
+      button.addEventListener("click", () => openSection(section));
+
+      // 2. clicking a sphere (instruction 5)
+      addEventListener("click", (e) => {
+        const s = sectionAt(e);       // which sphere was clicked?
+        if (s) openSection(s);        // same function, different caller
+      });
+      nav.appendChild(button);
+    }
+
+    // three essentials: scene, camera, renderer
+    const scene = new THREE.Scene();                     // the 3D world: an empty container for objects
+    const camera = new THREE.PerspectiveCamera(
+      50,                                                // field of view in degrees (zoom of the lens)
+      innerWidth / innerHeight,                          // aspect ratio = window width / height
+      0.1, 100                                           // near and far: only draw things between these distances
+    );
+    camera.position.z = 10;                              // step back 10 units so we can see the origin (0,0,0)
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // draws with the GPU; alpha = transparent background
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); // sharp on retina screens, capped for speed
+    renderer.setSize(innerWidth, innerHeight);           // fill the window
+    document.body.prepend(renderer.domElement);          // renderer made a <canvas>; put it first in the body
+
+    // a sphere = shape + skin
+    /*
+    const geometry = new THREE.SphereGeometry(3, 32, 32);  // radius 3, 32 slices around, 32 rings top-to-bottom
+    const material = new THREE.MeshBasicMaterial({ color: "#7dd3fc", wireframe: true }); // draw only the edges
+    const sphere = new THREE.Mesh(geometry, material);   // mesh = geometry + material = a visible object
+    scene.add(sphere);                                     // nothing is drawn unless it's in the scene
+    */
+
+    //Generate spheres from your data
+    const world = new THREE.Group();      // an invisible container; rotate it and everything inside rotates
+    scene.add(world);
+    let hovered = null;                   // which section the mouse is over (null = none). `let` = can change later
+
+    for (const section of sections) {     // same loop pattern as your buttons!
+      const segments = Math.round(12 + section.radius * 8);   // big spheres get more lines, small ones fewer
+
+      const glow = new THREE.Mesh(                            // a soft, see-through colored shell
+        new THREE.SphereGeometry(section.radius, 64, 64),
+        new THREE.MeshStandardMaterial({
+          color: section.color, emissive: section.color, emissiveIntensity: 0.4, // emissive = glows on its own
+          transparent: true, opacity: 0.06,
+          side: THREE.DoubleSide,         // draw the inside surface too (we'll fly inside later)
+          depthWrite: false,              // see explanation below
+        })
+      );
+      const wire = new THREE.Mesh(                            // the line pattern on top
+        new THREE.SphereGeometry(section.radius, segments, segments),
+        new THREE.MeshBasicMaterial({ color: section.color, wireframe: true, transparent: true, opacity: 0.25, depthWrite: false })
+      );
+      glow.renderOrder = wire.renderOrder = -section.radius;  // draw big spheres first, small ones last
+
+      world.add(glow, wire);
+      section.glow = glow;                // store the meshes ON the data object so the loop can find them
+      section.wire = wire;
+      section.offset = Math.random() * 10; // a random number so the spheres don't all breathe in sync
+    }
+
+    // Hover: which sphere is the mouse over?
+    const raycaster = new THREE.Raycaster();       // shoots a line from the camera through the mouse into the 3D world
+    const pointer = new THREE.Vector2();           // mouse position, measured the way three.js expects
+    const center = new THREE.Vector3(0, 0, 0);
+    const smallestFirst = [...sections].sort((a, b) => a.radius - b.radius); // a copy, sorted by size
+
+    function sectionAt(event) {
+      pointer.x = (event.clientX / innerWidth) * 2 - 1;      // pixels → -1 (left edge) to +1 (right edge)
+      pointer.y = -(event.clientY / innerHeight) * 2 + 1;    // pixels → +1 (top) to -1 (bottom). Screen y points down, 3D y points up
+      raycaster.setFromCamera(pointer, camera);
+      const d = raycaster.ray.distanceToPoint(center);       // how close the line passes to the center
+      return smallestFirst.find((s) => s.radius >= d) ?? null; // smallest sphere the line passes inside. ?? null = "or nothing"
+    }
+
+    addEventListener("pointermove", (e) => {
+      hovered = e.target.closest("button, .card") ? null : sectionAt(e); // ignore the mouse when it's over the menu or cards
+      document.body.style.cursor = hovered ? "pointer" : "";
+    });
+
+    // update the loop: spin the loop, breathe, react to hover
+    const clock = new THREE.Clock();
+    function loop() {
+      const t = clock.getElapsedTime();
+      world.rotation.y = 0.1 * t;                              // rotate the container, not each sphere
+      world.rotation.x = 0.05 * t;
+
+      for (const s of sections) {
+        const breathe = 1 + 0.008 * Math.sin(2 * t + s.offset); // sin swings between -1 and 1 → scale swings 0.992 to 1.008
+        s.glow.scale.setScalar(breathe);                         // setScalar = same scale on x, y and z
+        s.wire.scale.setScalar(breathe);
+
+        const hot = s === hovered;                               // === means "is exactly the same thing". true or false
+        s.wire.material.color.set(hot ? "#ffffff" : s.color);    // condition ? ifTrue : ifFalse
+        s.wire.material.opacity = hot ? 0.9 : 0.25;
+        s.glow.material.opacity = hot ? 0.15 : 0.06;
+        s.glow.material.emissiveIntensity = hot ? 1.5 + 0.3 * Math.sin(10 * t) : 0.4; // fast pulse while hovered
+      }
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    // Light
+    scene.add(new THREE.AmbientLight("#ffffff", 0.6));           // soft light from everywhere
+    const light = new THREE.PointLight("#ffffff", 1.5, 0, 0);    // a bulb: color, brightness, range (0 = infinite), fade (0 = none)
+    light.position.set(10, 10, 10);                              // up, right, toward you
+    scene.add(light);
+
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();          // camera settings are cached; tell it to recalculate
+      renderer.setSize(innerWidth, innerHeight);
+    });
+
+  </script>
+
+</body>
+
+</html>
+<!--
+  What you should see: plain black text on white, like a 1995 webpage.
+  That's correct! HTML alone only gives STRUCTURE. Step 2 adds style.
+-->
