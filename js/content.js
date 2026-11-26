@@ -12,7 +12,9 @@
 //           image paths are relative to index.html, e.g. "images/x.jpg"
 
 export const SECTIONS = [
-  { name: "about",    radius: 3.2, color: "#7dd3fc", blurb: "loading...", items: [] },
+  { name: "about",    radius: 3.2, color: "#7dd3fc", 
+    blurb: "loading...",
+    items: [] },
   { name: "projects", radius: 2.2, color: "#a78bfa", blurb: "beepboop",   items: [] },
   {
     name: "books",

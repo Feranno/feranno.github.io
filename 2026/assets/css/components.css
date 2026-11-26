@@ -1,0 +1,82 @@
+/* ==========================================================================
+   COMPONENTS: reusable pieces that only some pages use.
+   ========================================================================== */
+
+/* ---- Collapsible section ------------------------------------------------
+   Used on article.html and speculative_technology.html.
+   Built on the browser's own <details>/<summary>, so it opens and closes
+   without any JavaScript and works with the keyboard and screen readers.
+
+   <details class="collapsible">
+     <summary><h3>Section title</h3></summary>
+     <div class="collapsible__body"> ...content... </div>
+   </details>
+   ------------------------------------------------------------------------ */
+
+.collapsible {
+  margin: 0;
+}
+
+.collapsible > summary {
+  display: block;               /* hides the default triangle marker */
+  padding: 18px;
+  border-top: 0.5px solid var(--color-panel-border);
+  background-color: var(--color-panel);
+  font-size: 15px;
+  font-variant: small-caps;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background-color 0.4s;
+}
+
+.collapsible > summary::-webkit-details-marker {
+  display: none;                /* Safari's triangle marker */
+}
+
+.collapsible > summary:hover,
+.collapsible > summary:focus-visible {
+  background-color: var(--color-panel-hover);
+}
+
+.collapsible__body {
+  padding: 0 18px 28px;
+  border-left: 2px solid var(--color-rule);
+  background-color: var(--color-panel);
+}
+
+/* ---- Reading list ------------------------------------------------------
+   A list of essay or video titles, shown in italics.
+   ------------------------------------------------------------------------ */
+
+.reading-list > li {
+  font-style: italic;
+}
+
+/* Longer notes written under a list entry stay upright */
+.reading-list .notes {
+  font-style: normal;
+}
+
+.reading-list .notes li {
+  font-style: normal;
+}
+
+.reading-list .notes .questions li {
+  font-style: italic;
+}
+
+/* ---- Letter ------------------------------------------------------------
+   Paragraphs with an indented first line and no gap between them,
+   like a printed letter. Used on letters.html.
+   ------------------------------------------------------------------------ */
+
+.letter-body p {
+  margin: 0;
+  line-height: 1.6;
+  text-align: left;
+  text-indent: 40px;
+}
+
+.letter-body {
+  margin-bottom: 2.5em;
+}

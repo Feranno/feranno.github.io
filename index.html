@@ -1,46 +1,91 @@
-<!DOCTYPE html>
+<!doctype html>
+<!--
+  MY UNIVERSE: a personal site where each section is a glowing 3D sphere.
+
+  Project layout:
+    index.html        page structure (this file)
+    css/style.css     all styling
+    js/content.js     YOUR CONTENT: sections, cards, notes   ← edit this most
+    js/config.js      tuning knobs for the 3D scene
+    js/state.js       shared values that change while the page runs
+    js/panel.js       menu, content panel, cards, popup
+    js/scene.js       the three.js scene and its animation loop
+    js/input.js       mouse: hover, click, drag-to-spin
+    js/main.js        starts everything
+    images/           posters
+
+  Run locally (images and modules need a server, not file://):
+    python3 -m http.server 8765      then open http://localhost:8765
+-->
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="My Universe: a personal site where each section is a glowing 3D sphere.">
+  <meta name="theme-color" content="#0b0d17">
+  <title>My Universe</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='none' stroke='%2334d399' stroke-width='6'/><circle cx='50' cy='50' r='16' fill='%2334d399'/></svg>">
 
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QBD647KJDD"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() {dataLayer.push(arguments);}
-        gtag('js', new Date());
+  <!-- Fonts: connect early, then load -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&display=swap">
 
-        gtag('config', 'G-QBD647KJDD');
-    </script>
-    <!-- endof Global site tag (gtag.js) - Google Analytics -->
+  <link rel="stylesheet" href="css/style.css">
 
-
-    <link rel="stylesheet" href="/style.css">
-    <title>About </title>
+  <!-- Where `import ... from "three"` downloads from (pinned version, so it never changes under you) -->
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
+  </script>
+  <!-- Modules wait for the page to finish loading, so this is safe in <head> -->
+  <script type="module" src="js/main.js"></script>
 </head>
 
 <body>
-    <div id="menu">
-        <span class="title">Letter to Yvonne</span>
-        <ul>
-            <li><a href="/index.html">Home</a></li>
-            <li><a href="/about.html">About</a></li>
-            <li><a href="/letters.html">Letters</a></li>
-            <li><a href="/article.html">Article</a></li>
-            <li><a href="/speculative_technology.html">Speculative Technologies</a></li>
-            <!-- li><a href="/essays.html">Writing</a></li> -->
-            <li><a href="/courses.html">Courses</a></li>
-            <!-- li><a href="/papers.html">Research</a></li> -->
-        </ul>
-    </div>
-    <div id="left"></div>
-    <div id="content">
 
-        <p>
-            Christ did not live an envious life.
+  <!-- Site title, top-left -->
+  <header>
+    <h1 style="font-family: 'Times New Roman', Times, serif;">Feranno Liu</h1>
+    <p style="font-family: 'Times New Roman', Times, serif;">Thauma (θαῦμα) n. wonder</p>
+  </header>
+
+  <!-- Background music + its on/off switch, top-right. The switch stays hidden
+       until the track loads, so a missing file shows nothing. See js/audio.js -->
+  <audio id="music" src="music/chopin-ballade-1.mp3" loop preload="metadata"></audio>
+  <button type="button" id="sound-toggle" aria-pressed="false" hidden>♪ sound off</button>
+
+  <!-- Menu, bottom-left. Buttons are generated from js/content.js -->
+  <nav aria-label="Sections"></nav>
+
+  <!-- Content panel. Hidden on the home view; filled in by openSection() -->
+  <main hidden>
+    <button type="button" class="back">← back</button>
+    <h2 id="section-title"></h2>
+    <p id="section-blurb"></p>
+    <div class="grid" id="cards"></div>
+  </main>
+
+  <!-- Card detail view: full poster on the left, title and notes on the right.
+       Covers the whole screen. Filled in by openPopup() -->
+  <dialog id="popup" aria-labelledby="popup-title">
+    <button type="button" id="popup-close" class="back detail-back">← back</button>
+    <div class="detail">
+      <img id="popup-img" alt="">
+      <div class="detail-text">
+        <p id="popup-kicker" class="detail-kicker"></p>
+        <h3 id="popup-title"></h3>
+        <p id="popup-note"></p>
+      </div>
     </div>
+  </dialog>
+
+  <noscript>
+    <p class="noscript">This site needs JavaScript to show its sections.</p>
+  </noscript>
+
 </body>
 
 </html>
