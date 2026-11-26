@@ -157,7 +157,8 @@
   </nav>
 
   <!-- <main> = the main content of the page. For now it shows one section by hand. -->
-  <main>
+  <main hidden>
+    <button class="back">← back</button>
     <!-- h2 = a slightly smaller heading than h1. -->
 
     <h2>anime</h2>
@@ -196,28 +197,36 @@
 
     const nav = document.querySelector("nav");          // find the first <nav> (same selectors as CSS!)
 
-    function openSection(section) {                       // the click code, now with a name
+    //
+    let current = null;                                  // which section is open. null = home
+    const main = document.querySelector("main");
+
+    function openSection(section) {
+      current = section;
+      main.hidden = false;
       document.querySelector("h2").textContent = section.name;
       document.querySelector("main p").textContent = section.blurb;
       document.body.style.setProperty("--accent", section.color);
     }
+    function goHome() {
+      current = null;
+      main.hidden = true;
+    }
+
+    // 2. clicking a sphere
+    document.querySelector(".back").addEventListener("click", goHome);
+    addEventListener("keydown", (e) => { if (e.key === "Escape") goHome(); });
 
     for (const section of sections) {
       const button = document.createElement("button");
       button.textContent = section.name;
-      
+
       // 1. clicking a nav button
       button.addEventListener("click", () => openSection(section));
-
-      // 2. clicking a sphere (instruction 5)
-      addEventListener("click", (e) => {
-        const s = sectionAt(e);       // which sphere was clicked?
-        if (s) openSection(s);        // same function, different caller
-      });
       nav.appendChild(button);
     }
 
-    // three essentials: scene, camera, renderer
+    // SCENE, CAMERA, RENDERER
     const scene = new THREE.Scene();                     // the 3D world: an empty container for objects
     const camera = new THREE.PerspectiveCamera(
       50,                                                // field of view in degrees (zoom of the lens)
@@ -238,6 +247,8 @@
     const sphere = new THREE.Mesh(geometry, material);   // mesh = geometry + material = a visible object
     scene.add(sphere);                                     // nothing is drawn unless it's in the scene
     */
+
+    // WORLD, SPHERE LOOP, LIGHTS
 
     //Generate spheres from your data
     const world = new THREE.Group();      // an invisible container; rotate it and everything inside rotates
@@ -282,17 +293,43 @@
       return smallestFirst.find((s) => s.radius >= d) ?? null; // smallest sphere the line passes inside. ?? null = "or nothing"
     }
 
+    //click vs drag
+    addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button, .card")) return;
+      dragging = true;
+      dragMoved = 0;
+    });
+    addEventListener("pointerup", () => { dragging = false; });
+
     addEventListener("pointermove", (e) => {
-      hovered = e.target.closest("button, .card") ? null : sectionAt(e); // ignore the mouse when it's over the menu or cards
+      mouse.x = (e.clientX / innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+      if (dragging) {
+        spin.y += e.movementX * 0.005;                  // movementX = pixels moved since the last event
+        spin.x += e.movementY * 0.005;
+        dragMoved += Math.abs(e.movementX) + Math.abs(e.movementY); // abs = drop the minus sign
+      }
+      hovered = e.target.closest("button, .card") ? null : sectionAt(e);
       document.body.style.cursor = hovered ? "pointer" : "";
     });
+
+    addEventListener("click", (e) => {
+      if (e.target.closest("button, .card")) return;
+      if (dragMoved > 5) return;                        // it was a drag, not a click
+      const s = sectionAt(e);
+      if (!s || s === current) goHome();                // empty space, or the open sphere again → home
+      else openSection(s);
+    });
+
+
 
     // update the loop: spin the loop, breathe, react to hover
     const clock = new THREE.Clock();
     function loop() {
-      const t = clock.getElapsedTime();
-      world.rotation.y = 0.1 * t;                              // rotate the container, not each sphere
-      world.rotation.x = 0.05 * t;
+      const dt = clock.getDelta();
+      const t = clock.elapsedTime;
+      world.rotation.y = 0.1 * t + spin.y;                      // rotate the container, not each sphere
+      world.rotation.x = 0.05 * t + spin.x;
 
       for (const s of sections) {
         const breathe = 1 + 0.008 * Math.sin(2 * t + s.offset); // sin swings between -1 and 1 → scale swings 0.992 to 1.008
@@ -306,10 +343,26 @@
         s.glow.material.emissiveIntensity = hot ? 1.5 + 0.3 * Math.sin(10 * t) : 0.4; // fast pulse while hovered
       }
 
+      // rings and sparks
+      for (const ring of rings) ring.rotation.z = t * ring.userData.speed;  // spin each ring in its own tilted plane
+
+      sparks.visible = hovered !== null;                       // !== means "is not". Show sparks only while hovering
+      if (hovered) {
+        sparks.material.color.set(hovered.color);
+        for (let i = 0; i < SPARKS; i++) {
+          const p = sparkData[i];
+          const dist = hovered.radius + ((t * p.speed + p.offset) % 0.6); // % = remainder: counts up to 0.6, then snaps to 0
+          sparkPositions[i * 3] = p.dir.x * dist;          // position = direction × distance
+          sparkPositions[i * 3 + 1] = p.dir.y * dist;
+          sparkPositions[i * 3 + 2] = p.dir.z * dist;
+        }
+        sparkGeometry.attributes.position.needsUpdate = true;  // "the numbers changed, send them to the GPU again"
+      }
+      updateCamera(dt);                                        // step 4
+
       renderer.render(scene, camera);
       requestAnimationFrame(loop);
     }
-    loop();
 
     // Light
     scene.add(new THREE.AmbientLight("#ffffff", 0.6));           // soft light from everywhere
@@ -317,12 +370,91 @@
     light.position.set(10, 10, 10);                              // up, right, toward you
     scene.add(light);
 
+    //Drag to spin
+    const spin = { x: 0, y: 0 };      // extra rotation from dragging
+    let dragging = false;
+    let dragMoved = 0;                // how many pixels the mouse moved during this press
+
     addEventListener("resize", () => {
       camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();          // camera settings are cached; tell it to recalculate
       renderer.setSize(innerWidth, innerHeight);
     });
 
+    // ORBIT RINGS: 5 dots in a circular ring
+    const dots = new Float32Array(100 * 3);          // a fast list of plain numbers: x,y,z, x,y,z, … for 100 dots
+    for (let i = 0; i < 100; i++) {                  // classic loop: i counts 0, 1, 2 … 99
+      const angle = (i / 100) * Math.PI * 2;         // spread the dots evenly around a full circle (2π radians)
+      dots[i * 3] = 4 * Math.cos(angle);         // x  ┐ cos and sin of an angle give a point on a circle.
+      dots[i * 3 + 1] = 4 * Math.sin(angle);         // y  ┘ Multiply by 4 = radius 4, just outside the biggest sphere
+      dots[i * 3 + 2] = 0;                           // z: flat
+    }
+    const ringGeometry = new THREE.BufferGeometry(); // geometry from raw points instead of a ready-made shape
+    ringGeometry.setAttribute("position", new THREE.BufferAttribute(dots, 3)); // "read these numbers 3 at a time as positions"
+
+    const haloDot = new THREE.PointsMaterial({ size: 0.15, color: "#ffffff", transparent: true, opacity: 0.15, depthWrite: false });
+    const coreDot = new THREE.PointsMaterial({ size: 0.05, color: "#ffffff", transparent: true, opacity: 0.9, depthWrite: false });
+
+    const tilts = [0, 30, 60, 120, 150];             // degrees. 90 is skipped (it would be seen edge-on as a line)
+    const rings = [];
+    for (let i = 0; i < tilts.length; i++) {
+      const ring = new THREE.Group();
+      ring.add(new THREE.Points(ringGeometry, haloDot));   // big, faint dots ┐ drawn on the same spot =
+      ring.add(new THREE.Points(ringGeometry, coreDot));   // small, bright   ┘ a fake "glow" for free
+      ring.rotation.x = THREE.MathUtils.degToRad(tilts[i]); // tilt the whole ring
+      ring.userData.speed = 0.1 + 0.02 * i;                 // userData = a spot for your own data. Each ring is a bit faster
+      world.add(ring);
+      rings.push(ring);                                     // push = add to the end of an array
+    }
+
+    //SPARKS
+    const SPARKS = 150;                               // ALL_CAPS = a convention for "this number never changes"
+    const sparkData = [];
+    for (let i = 0; i < SPARKS; i++) {
+      const theta = Math.random() * Math.PI * 2;      // random angle around the equator
+      const phi = Math.acos(2 * Math.random() - 1);   // random angle from the north pole (see note below)
+      sparkData.push({
+        dir: new THREE.Vector3().setFromSphericalCoords(1, phi, theta), // a direction: an arrow of length 1
+        speed: 0.1 + 0.1 * Math.random(),
+        offset: Math.random() * 100,                  // so they don't all start together
+      });
+    }
+    const sparkPositions = new Float32Array(SPARKS * 3);
+    const sparkGeometry = new THREE.BufferGeometry();
+    sparkGeometry.setAttribute("position", new THREE.BufferAttribute(sparkPositions, 3));
+    const sparks = new THREE.Points(sparkGeometry, new THREE.PointsMaterial({
+      size: 0.06, transparent: true, opacity: 0.9, depthWrite: false,
+      blending: THREE.AdditiveBlending,               // add colors on top of what's behind, so overlaps get brighter, like light
+    }));
+    sparks.frustumCulled = false;                     // see note below
+    world.add(sparks);
+
+    // The loop: real time steps, plus rings and sparks
+
+    // CAMERA
+    const mouse = { x: 0, y: 0 };
+    const camGoal = new THREE.Vector3(0, 0, 10);    // where the camera wants to BE
+    const lookGoal = new THREE.Vector3();           // where it wants to LOOK
+    const look = new THREE.Vector3();               // where it's looking right now
+
+    function updateCamera(dt) {
+      if (current) {
+        const distance = current.radius * 3.2 + 1.5;                  // small sphere → fly in close
+        const halfWidth = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * distance * camera.aspect; // how wide the view is at that distance
+        const shift = camera.aspect > 1 ? halfWidth * 0.5 : 0;        // on a wide screen, slide right so the sphere sits in the LEFT half
+        camGoal.set(shift, 0, distance);
+        lookGoal.set(shift, 0, 0);
+      } else {
+        camGoal.set(0, 0, 10);
+        lookGoal.set(mouse.x * 0.5, mouse.y * 0.5, 0);                // home: lean slightly toward the mouse
+      }
+      const k = 1 - Math.exp(-3 * dt);              // fraction of the remaining distance to move this frame
+      camera.position.lerp(camGoal, k);             // lerp = move part of the way toward a target
+      look.lerp(lookGoal, k);
+      camera.lookAt(look);
+    }
+
+    loop();
   </script>
 
 </body>
