@@ -1,0 +1,330 @@
+/* ================================================================
+   MY UNIVERSE: styles
+   1. Colors & fonts   2. Base   3. Layers   4. Header & menu
+   5. Content panel    6. Cards  7. Popup    8. Accessibility
+   9. Small screens (last, so it overrides)
+   ================================================================ */
+
+
+/* ---------- 1. Colors & fonts: change the look in one place ---------- */
+:root {
+  --bg: #0b0d17;          /* page background (deep navy) */
+  --panel: #141829;       /* popup background */
+  --text: #ffffff;
+  --muted: #8a8fa8;       /* secondary text */
+  --soft: #b8bccf;        /* popup body text */
+  --line: #3a3f5c;        /* thin borders */
+  --font-body: "Inter", sans-serif;
+  --font-display: "Instrument Serif", serif;
+  /* --accent is set by JavaScript to the open section's color */
+}
+
+
+/* ---------- 2. Base ---------- */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+
+/* ---------- 3. Layers: the 3D canvas sits behind everything ---------- */
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+header, nav, main {
+  z-index: 1;              /* above the canvas (z-index needs a position set) */
+}
+
+
+/* ---------- 4. Header & menu: pinned to the corners ---------- */
+header {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+}
+
+header h1 {
+  margin: 0;
+}
+
+header p {
+  margin: 4px 0 0;
+}
+
+nav {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+nav button {
+  background: none;
+  border: none;
+  padding: 2px 0;
+  color: var(--muted);
+  cursor: pointer;
+  text-shadow: 0 0 8px var(--bg);   /* readable over the spheres */
+}
+
+nav button:hover,
+nav button.active {
+  color: var(--text);
+}
+
+nav button.active::before {         /* colored dot before the open section */
+  content: "● ";
+  color: var(--accent);
+}
+
+/* Music switch, top-right */
+#sound-toggle {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 12px;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  text-shadow: 0 0 8px var(--bg);
+}
+
+#sound-toggle:hover,
+#sound-toggle[aria-pressed="true"] {
+  color: var(--text);
+}
+
+
+/* ---------- 5. Content panel: the right side of the screen ---------- */
+main {
+  position: relative;
+  margin-left: clamp(280px, 45%, 50%);   /* 45% of the width, between 280px and 50% */
+  padding: 120px 48px 80px 0;            /* top right bottom left */
+}
+
+main h2 {
+  font-size: 64px;
+  margin: 0 0 8px;
+}
+
+.back {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 12px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.back:hover {
+  color: var(--text);
+}
+
+
+/* ---------- 6. Cards: a responsive grid of posters ---------- */
+.grid {
+  display: grid;
+  /* as many columns as fit, each at least --card-min wide */
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-min, 160px), 1fr));
+  gap: 12px;
+}
+
+.card {
+  position: relative;
+  aspect-ratio: 3 / 4;               /* poster shape */
+  display: flex;
+  align-items: flex-end;             /* title at the bottom */
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  overflow: hidden;                  /* crop the image to the rounded corners */
+  text-align: left;
+  cursor: pointer;
+  background: linear-gradient(160deg, var(--accent, #34d399), var(--bg));
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.08);
+}
+
+.card img {
+  position: absolute;
+  inset: 0;                          /* stretch to all four edges */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;                 /* fill and crop, never squash */
+  transition: transform 0.5s, filter 0.5s;
+}
+
+.card:hover img {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+.card span {
+  position: relative;                /* above the image */
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+}
+
+
+/* ---------- 7. Detail view: full poster + title and notes on the side ---------- */
+
+/* The dialog covers the whole screen; the spheres show through, blurred */
+#popup {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;                   /* undo the browser's default dialog size limits */
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: rgba(11, 13, 23, 0.72);
+  backdrop-filter: blur(10px);
+  color: var(--text);
+  overflow: hidden;
+}
+
+#popup::backdrop {
+  background: transparent;           /* the dialog itself does the dimming */
+}
+
+.detail-back {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 1;
+}
+
+/* Poster and text side by side, centered */
+.detail {
+  box-sizing: border-box;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 56px;
+  padding: 80px 48px;
+}
+
+#popup img {
+  max-height: 80vh;                  /* as big as fits... */
+  max-width: min(45vw, 560px);
+  width: auto;
+  height: auto;
+  object-fit: contain;               /* ...and never cropped */
+  border-radius: 12px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.detail-text {
+  max-width: 380px;
+}
+
+.detail-kicker {                     /* small section label above the title */
+  margin: 0 0 8px;
+  color: var(--accent, var(--muted));
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+#popup h3 {
+  font-size: 44px;
+  line-height: 1.1;
+  margin: 0 0 16px;
+}
+
+#popup-note {
+  margin: 0;
+  color: var(--soft);
+  line-height: 1.7;
+}
+
+/* Entrance: poster rises and grows in, text follows a beat later */
+@media (prefers-reduced-motion: no-preference) {
+  #popup[open] img {
+    animation: poster-in 0.5s ease-out;
+  }
+  #popup[open] .detail-text {
+    animation: text-in 0.5s 0.15s ease-out backwards;
+  }
+}
+
+@keyframes poster-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+}
+
+@keyframes text-in {
+  from { opacity: 0; transform: translateX(16px); }
+}
+
+
+/* ---------- 8. Accessibility ---------- */
+
+/* A clear outline for keyboard users (not shown on mouse clicks) */
+:focus-visible {
+  outline: 2px solid var(--accent, #7dd3fc);
+  outline-offset: 3px;
+}
+
+/* People who turn on "reduce motion" in their OS get no hover zooms */
+@media (prefers-reduced-motion: reduce) {
+  .card, .card img {
+    transition: none;
+  }
+  .card:hover, .card:hover img {
+    transform: none;
+  }
+}
+
+.noscript {
+  padding: 120px 24px;
+  color: var(--muted);
+}
+
+
+/* ---------- 9. Small screens: keep last so it overrides the rules above ---------- */
+@media (max-width: 800px) {
+  main {
+    margin-left: 0;
+    padding: 140px 16px 80px;
+  }
+
+  /* Detail view: poster on top, text below, scroll if the note is long */
+  .detail {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 24px;
+    padding: 72px 20px 40px;
+    overflow-y: auto;
+  }
+
+  #popup img {
+    max-width: 80vw;
+    max-height: 60vh;
+  }
+}
