@@ -42,7 +42,9 @@ export function openSection(section) {
   blurbEl.textContent = section.blurb;
   document.body.style.setProperty("--accent", section.color);
 
-  cardsEl.replaceChildren(...section.items.map(buildCard));
+  const photos = section.layout === "photos";
+  cardsEl.classList.toggle("photos", photos);
+  cardsEl.replaceChildren(...section.items.map(photos ? buildPhoto : buildCard));
   proseEl.hidden = !section.body?.length;
   proseEl.replaceChildren(...(section.body ?? []).map(buildBlock));
 
@@ -137,6 +139,26 @@ function buildCard(raw, index) {
     { duration: 500, delay: 200 + index * 50, easing: "ease-out", fill: "backwards" });
 
   return card;
+}
+
+
+// One photo in a "photos" section: shown at its own shape, enlarges on click
+function buildPhoto(item, index) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "photo";
+  button.setAttribute("aria-label", `Enlarge: ${item.caption ?? "photo"}`);
+  const img = document.createElement("img");
+  img.src = item.image;
+  img.alt = item.caption ?? "";
+  img.loading = "lazy";
+  button.appendChild(img);
+  button.addEventListener("click", () => openLightbox(item.image, item.caption ?? ""));
+
+  animate(button, [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }],
+    { duration: 500, delay: 200 + index * 50, easing: "ease-out", fill: "backwards" });
+
+  return button;
 }
 
 
@@ -250,7 +272,7 @@ export function initPanel() {
   });
   addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
-    if (popup.open) return;                        // the dialog closes itself on Escape
+    if (popup.open || lightbox.open) return;       // the dialog closes itself on Escape
     goHome();
   });
 }

@@ -30,7 +30,8 @@ function fadeTo(target) {
   const startTime = performance.now();
 
   function step(now) {
-    const progress = Math.min((now - startTime) / FADE_MS, 1);
+    // clamp: the frame timestamp can be a hair earlier than startTime
+    const progress = Math.min(Math.max((now - startTime) / FADE_MS, 0), 1);
     music.volume = start + (target - start) * progress;
     if (progress < 1) fadeFrame = requestAnimationFrame(step);
     else if (target === 0) music.pause();

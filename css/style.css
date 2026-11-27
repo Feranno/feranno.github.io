@@ -240,6 +240,39 @@ main h2 {
 }
 
 
+/* Photo wall ("photos" layout): columns of photos at their natural shape */
+.grid.photos {
+  display: block;
+  columns: 3 160px;                  /* up to 3 columns, each at least 160px */
+  column-gap: 12px;
+}
+
+.photo {
+  display: block;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  overflow: hidden;
+  break-inside: avoid;               /* never split a photo across columns */
+  cursor: zoom-in;
+  background: var(--bg);
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 0.5s, filter 0.5s;
+}
+
+.photo:hover img {
+  transform: scale(1.05);
+  filter: brightness(1.15);
+}
+
+
 /* ---------- 7. Detail view: full poster + title and notes on the side ---------- */
 
 /* The dialog covers the whole screen; the spheres show through, blurred */
@@ -465,10 +498,10 @@ video.detail-media {
 
 /* People who turn on "reduce motion" in their OS get no hover zooms */
 @media (prefers-reduced-motion: reduce) {
-  .card, .card img {
+  .card, .card img, .photo img {
     transition: none;
   }
-  .card:hover, .card:hover img {
+  .card:hover, .card:hover img, .photo:hover img {
     transform: none;
   }
 }

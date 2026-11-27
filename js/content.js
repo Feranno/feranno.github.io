@@ -16,6 +16,8 @@
 //             facts            [label, value] pairs
 //             gallery          [{ src, caption }], click to enlarge
 //           In a note, "\n\n" starts a new paragraph.
+//   layout  optional. "photos" shows items as { image, caption } photos
+//           in a wall, each opening full size on click.
 
 export const SECTIONS = [
   {
@@ -90,12 +92,24 @@ export const SECTIONS = [
     radius: 1.0,
     color: "#fbbf24",
     blurb: "aesthetic",
+    // layout "photos": a wall of photos at their own shapes, no titles on top.
+    // Clicking one enlarges it with its caption.
+    layout: "photos",
     items: [
-      { title: ""},
-      { title: ""},
-      { title: ""},
-      { title: ""},
-      { title: ""},
+      { image: "photos/01-soccer.jpg",             caption: "first kick" },
+      { image: "photos/02-smoothies.jpg",          caption: "mango smoothies" },
+      { image: "photos/03-cub-scouts.jpg",         caption: "cub scouts gift exchange" },
+      { image: "photos/04-shanghai-tower.jpg",     caption: "oriental pearl tower, shanghai" },
+      { image: "photos/05-skewers.jpg",            caption: "night market skewers" },
+      { image: "photos/06-hawker-noodles.jpg",     caption: "hawker centre noodles" },
+      { image: "photos/07-marina-bay.jpg",         caption: "marina bay, singapore" },
+      { image: "photos/08-hawker-shells.jpg",      caption: "cockles and sea snails" },
+      { image: "photos/09-rose-syrup.jpg",         caption: "nasi lemak and rose syrup" },
+      { image: "photos/10-hor-fun.jpg",            caption: "hor fun" },
+      { image: "photos/11-budapest-ice-cream.jpg", caption: "ice cream walk, budapest" },
+      { image: "photos/12-basketball-rebound.jpg", caption: "going up for it" },
+      { image: "photos/13-basketball-layup.jpg",   caption: "layup" },
+      { image: "photos/14-basketball-line.jpg",    caption: "waiting in line" },
     ],
   },
   {
