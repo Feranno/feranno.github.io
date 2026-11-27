@@ -142,23 +142,45 @@ function buildCard(raw, index) {
 }
 
 
-// One photo in a "photos" section: shown at its own shape, enlarges on click
+// One photo in a "photos" section: shown at its own shape with its caption.
+// Hovering zooms it in place (CSS). A tap or Enter does the same, for phones
+// and keyboards; tapping it again, or another photo, puts it back.
 function buildPhoto(item, index) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "photo";
-  button.setAttribute("aria-label", `Enlarge: ${item.caption ?? "photo"}`);
+  button.setAttribute("aria-pressed", "false");
+
+  const frame = document.createElement("div");
+  frame.className = "photo-frame";
   const img = document.createElement("img");
   img.src = item.image;
-  img.alt = item.caption ?? "";
+  img.alt = "";                                    // the caption below names it
   img.loading = "lazy";
-  button.appendChild(img);
-  button.addEventListener("click", () => openLightbox(item.image, item.caption ?? ""));
+  frame.appendChild(img);
+
+  const caption = document.createElement("span");
+  caption.textContent = item.caption ?? "";
+  button.append(frame, caption);
+
+  button.addEventListener("click", () => {
+    const zoom = !button.classList.contains("zoomed");
+    for (const other of cardsEl.querySelectorAll(".photo.zoomed")) setZoom(other, false);
+    setZoom(button, zoom);
+  });
+  // un-zoom when a real mouse leaves (touch screens send stray leave events after a tap)
+  button.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") setZoom(button, false); });
+  button.addEventListener("blur", () => setZoom(button, false));
 
   animate(button, [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }],
     { duration: 500, delay: 200 + index * 50, easing: "ease-out", fill: "backwards" });
 
   return button;
+}
+
+function setZoom(photo, on) {
+  photo.classList.toggle("zoomed", on);
+  photo.setAttribute("aria-pressed", String(on));
 }
 
 
