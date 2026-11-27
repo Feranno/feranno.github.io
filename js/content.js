@@ -54,13 +54,50 @@ export const SECTIONS = [
     blurb: "beepboop",
     items: [
       {
-        title: "computer",
+        title: "SAP-1",
         image: "projects/computer/cover.jpg",                // card cover
-        video: "projects/computer/conditional-jump.mp4",     // replaces the poster in the detail view
-        poster: "projects/computer/video-poster.jpg",        // still frame shown before the video loads
+        video: "projects/computer/conditional-jump-4k.mp4", // replaces the poster in the detail view
+        poster: "projects/computer/video-poster-4k.jpg", // still frame shown before the video loads
         subtitle: "building a general purpose computer, carefully",
-        note: "Running a conditional-jump program that counts up to 255, back down to 0, and repeats.\n\n" +
-              "I spent 2–3× more time debugging this thing than building it, because when my program doesn't work like I intended, I have to reason through the entire stack: did i miswire an input, did i burn a chip, do my LEDs need resistors, did i write my control logic correctly, did i write my assembly code correctly, did i insert the pins for the assembly code correctly. I wanted to give up on this project 70–80 times. Computer architecture is very much a lesson in interaction design.",
+        // One paragraph per array entry; they're joined with a blank line between them.
+        note: [
+          "I wanted to understand how computers worked. How do computational primitives " +
+          "come together to form the von Neumann architecture? What does it mean for a " +
+          "machine to be Turing complete? Is it possible for us to run vastly different " +
+          "software programs on a single general purpose computer?",
+
+          "In the beginning, all you see are the results. I see the ideas and paradigms " +
+          "that shaped the industry - starting from binary, to logic gates, to a discussion " +
+          "of relays and transistors, to building the clock, the ALU, the display, and the " +
+          "control signals, and in the end combining all the parts to form a minimal " +
+          "implementation of a computer processing unit where we can write assembly " +
+          "programs into.",
+
+          "In the end, all I saw were the painstaking details that had to be " +
+          "configured and engineered to guardrail against failed test cases. I burnt TTL " +
+          "chips, replaced LED lights with resistor-built in LEDs, sifted through 200+ wires " +
+          "to notice that the source of the problem was not a miswired input, but a clock " +
+          "racing condition, so then I had to stablize the clock before the input was wired " +
+          "into the memory address register.",
+
+          "I remember writing the microinstructions for " +
+          "designing the instruction set architecture for my assembly language, and I " +
+          "remember thinking to myself that if a single binary input was off, I wouldn't " +
+          "notice the problem until I write the assembly program, insert the program into " +
+          "hardware, see that the control signals are off, check if any of my control " +
+          "signal wires were off, check if at any point there exists a short circuit, check " +
+          "if I inserted the assembly program wrong, and only after going through the " +
+          "entire tech stack, would I consider if the microinstructions for the assembly " +
+          "program were written wrong. This process of debugging throughout the entire " +
+          "stack taught me the painstaking process of building fault tolerant systems.",
+
+          "That perhaps this dream of understanding how a computer works was just that - a " +
+          "dream. And behind the veil of buzzwords, insights, and excitement surrounding " +
+          "the capabilities of computer hardware and software lies the accumulation of " +
+          "lifetimes worth of pedestrian work, failed experiments, test faults, and " +
+          "resourcefulness, or in modern terms what we call hustle, as a bedrock of " +
+          "innovation.",
+        ].join("\n\n"),
         facts: [
           ["RAM",       "16 bytes (4-bit address)"],
           ["ALU",       "8-bit add / subtract"],
@@ -88,11 +125,10 @@ export const SECTIONS = [
       { title: "Know My Name",            image: "images/know-my-name.jpg" },
       { title: "Sapiens",                 image: "images/sapiens.jpg" },
       { title: "When Breath Becomes Air", image: "images/when-breath-becomes-air.jpg" },
-      { title: "Vagabond",                image: "images/vagabond.jpg" },
     ],
   },
   {
-    name: "visual-generation",
+    name: "photos",
     radius: 1.0,
     color: "#fbbf24",
     blurb: "aesthetic",
