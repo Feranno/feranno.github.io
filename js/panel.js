@@ -43,6 +43,7 @@ export function openSection(section) {
   document.body.style.setProperty("--accent", section.color);
 
   const photos = section.layout === "photos";
+  expanded = null;                                 // any enlarged photo goes with the old cards
   cardsEl.classList.toggle("photos", photos);
   cardsEl.replaceChildren(...section.items.map(photos ? buildPhoto : buildCard));
   proseEl.hidden = !section.body?.length;
@@ -143,34 +144,15 @@ function buildCard(raw, index) {
 
 
 // One photo in a "photos" section: shown at its own shape with its caption.
-// Hovering zooms it in place (CSS). A tap or Enter does the same, for phones
-// and keyboards; tapping it again, or another photo, puts it back.
+// Hovering zooms it a little (CSS). Clicking or tapping opens it large, in a
+// full-width row right below its own row (see expandPhoto).
 function buildPhoto(item, index) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "photo";
-  button.setAttribute("aria-pressed", "false");
-
-  const frame = document.createElement("div");
-  frame.className = "photo-frame";
-  const img = document.createElement("img");
-  img.src = item.image;
-  img.alt = "";                                    // the caption below names it
-  img.loading = "lazy";
-  frame.appendChild(img);
-
-  const caption = document.createElement("span");
-  caption.textContent = item.caption ?? "";
-  button.append(frame, caption);
-
-  button.addEventListener("click", () => {
-    const zoom = !button.classList.contains("zoomed");
-    for (const other of cardsEl.querySelectorAll(".photo.zoomed")) setZoom(other, false);
-    setZoom(button, zoom);
-  });
-  // un-zoom when a real mouse leaves (touch screens send stray leave events after a tap)
-  button.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") setZoom(button, false); });
-  button.addEventListener("blur", () => setZoom(button, false));
+  button.setAttribute("aria-expanded", "false");
+  button.append(...photoParts(item));
+  button.addEventListener("click", () => expandPhoto(button, item));
 
   animate(button, [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }],
     { duration: 500, delay: 200 + index * 50, easing: "ease-out", fill: "backwards" });
@@ -178,10 +160,79 @@ function buildPhoto(item, index) {
   return button;
 }
 
-function setZoom(photo, on) {
-  photo.classList.toggle("zoomed", on);
-  photo.setAttribute("aria-pressed", String(on));
+// The picture in its rounded frame, and the caption under it
+function photoParts(item) {
+  const frame = document.createElement("div");
+  frame.className = "photo-frame";
+  const img = document.createElement("img");
+  img.src = item.image;
+  img.alt = "";                                    // the caption names it
+  frame.appendChild(img);
+  const caption = document.createElement("span");
+  caption.textContent = item.caption ?? "";
+  return [frame, caption];
 }
+
+
+// ---------- Enlarged photo ----------
+// The clicked photo's spot stays empty (so nothing jumps), and a large copy
+// opens across the whole grid after the last photo in that row. It grows out
+// of the small one. Clicking the large one closes it; clicking another photo
+// moves it there.
+
+let expanded = null;                               // { photo, item, block } or null
+
+function expandPhoto(photo, item) {
+  const wasOpen = expanded?.photo === photo;
+  collapsePhoto();
+  if (wasOpen) return;
+
+  const block = document.createElement("button");
+  block.type = "button";
+  block.className = "photo-expanded";
+  block.setAttribute("aria-label", `Close: ${item.caption ?? "photo"}`);
+  block.append(...photoParts(item));
+  block.addEventListener("click", () => { collapsePhoto(); photo.focus(); });
+
+  const from = photo.querySelector(".photo-frame").getBoundingClientRect();
+  photo.classList.add("is-open");
+  photo.setAttribute("aria-expanded", "true");
+  expanded = { photo, item, block };
+  placeExpanded();
+
+  // Grow from where the small photo was (the "FLIP" trick: measure both, then animate the difference)
+  const frame = block.querySelector(".photo-frame");
+  const to = frame.getBoundingClientRect();
+  animate(frame, [
+    { transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width})` },
+    { transform: "none" },
+  ], { duration: 500, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" });
+  animate(block.querySelector("span"), [{ opacity: 0 }, { opacity: 1 }],
+    { duration: 300, delay: 250, easing: "ease-out", fill: "backwards" });
+
+  block.scrollIntoView({ block: "nearest", behavior: REDUCED_MOTION ? "auto" : "smooth" });
+}
+
+// Put the large copy after the last photo in the clicked photo's row
+function placeExpanded() {
+  if (!expanded) return;
+  const photos = [...cardsEl.querySelectorAll(".photo")];
+  const columns = getComputedStyle(cardsEl).gridTemplateColumns.split(" ").length;
+  const index = photos.indexOf(expanded.photo);
+  const rowEnd = Math.min(Math.floor(index / columns) * columns + columns - 1, photos.length - 1);
+  photos[rowEnd].after(expanded.block);
+}
+
+function collapsePhoto() {
+  if (!expanded) return;
+  expanded.block.remove();
+  expanded.photo.classList.remove("is-open");
+  expanded.photo.setAttribute("aria-expanded", "false");
+  expanded = null;
+}
+
+// The column count changes with the window width, so the row end can move
+addEventListener("resize", placeExpanded);
 
 
 // ---------- Detail view (full poster + notes) ----------
@@ -295,6 +346,12 @@ export function initPanel() {
   addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     if (popup.open || lightbox.open) return;       // the dialog closes itself on Escape
+    if (expanded) {                                // first Escape closes an enlarged photo
+      const photo = expanded.photo;
+      collapsePhoto();
+      photo.focus();
+      return;
+    }
     goHome();
   });
 }
