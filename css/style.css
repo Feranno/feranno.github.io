@@ -111,11 +111,21 @@ nav button.active::before {         /* colored dot before the open section */
 }
 
 /* Music switch, top-right */
-#sound-toggle {
+/* Music controls, top-right: track switch + on/off */
+#sound {
   position: fixed;
   top: 24px;
   right: 24px;
   z-index: 1;
+  display: flex;
+  gap: 8px;
+}
+
+#sound[hidden] {
+  display: none;
+}
+
+#sound button {
   background: none;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -126,7 +136,7 @@ nav button.active::before {         /* colored dot before the open section */
   text-shadow: 0 0 8px var(--bg);
 }
 
-#sound-toggle:hover,
+#sound button:hover,
 #sound-toggle[aria-pressed="true"] {
   color: var(--text);
 }
@@ -566,6 +576,13 @@ video.detail-media {
   main {
     margin-left: 0;
     padding: 140px 16px 220px;       /* bottom: room to scroll clear of the fixed menu */
+  }
+
+  /* Music controls: stacked, so they clear the name on narrow screens */
+  #sound {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
   }
 
   /* Written text sits over the brightest part of the spheres here, and over

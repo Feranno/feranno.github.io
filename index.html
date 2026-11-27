@@ -34,7 +34,7 @@
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&family=Spectral:ital,wght@0,400;1,400&display=swap">
 
-  <link rel="stylesheet" href="css/style.css?v=2026-11-27b">
+  <link rel="stylesheet" href="css/style.css?v=2026-11-27f">
 
   <!-- Where imports download from.
        "three" is pinned, so it never changes under you.
@@ -44,18 +44,18 @@
   <script type="importmap">
     { "imports": {
       "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-      "./js/main.js": "./js/main.js?v=2026-11-27b",
-      "./js/panel.js": "./js/panel.js?v=2026-11-27b",
-      "./js/scene.js": "./js/scene.js?v=2026-11-27b",
-      "./js/input.js": "./js/input.js?v=2026-11-27b",
-      "./js/audio.js": "./js/audio.js?v=2026-11-27b",
-      "./js/config.js": "./js/config.js?v=2026-11-27b",
-      "./js/content.js": "./js/content.js?v=2026-11-27b",
-      "./js/state.js": "./js/state.js?v=2026-11-27b"
+      "./js/main.js": "./js/main.js?v=2026-11-27f",
+      "./js/panel.js": "./js/panel.js?v=2026-11-27f",
+      "./js/scene.js": "./js/scene.js?v=2026-11-27f",
+      "./js/input.js": "./js/input.js?v=2026-11-27f",
+      "./js/audio.js": "./js/audio.js?v=2026-11-27f",
+      "./js/config.js": "./js/config.js?v=2026-11-27f",
+      "./js/content.js": "./js/content.js?v=2026-11-27f",
+      "./js/state.js": "./js/state.js?v=2026-11-27f"
     } }
   </script>
   <!-- Modules wait for the page to finish loading, so this is safe in <head> -->
-  <script type="module" src="js/main.js?v=2026-11-27b"></script>
+  <script type="module" src="js/main.js?v=2026-11-27f"></script>
 </head>
 
 <body>
@@ -69,7 +69,11 @@
   <!-- Background music + its on/off switch, top-right. The switch stays hidden
        until the track loads, so a missing file shows nothing. See js/audio.js -->
   <audio id="music" src="music/chopin-ballade-1.mp3" loop preload="metadata"></audio>
-  <button type="button" id="sound-toggle" aria-pressed="false" hidden>♪ sound off</button>
+  <div id="sound" hidden>
+    <!-- Switches between the tracks listed in js/audio.js -->
+    <button type="button" id="track-toggle">⇄ chopin</button>
+    <button type="button" id="sound-toggle" aria-pressed="false">♪ sound off</button>
+  </div>
 
   <!-- Menu, bottom-left. Buttons are generated from js/content.js -->
   <nav aria-label="Sections"></nav>
