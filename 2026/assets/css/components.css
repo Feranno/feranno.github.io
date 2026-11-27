@@ -62,6 +62,39 @@
   margin-top: 0;
 }
 
+/* A page title in small capitals throughout, so its first letter isn't
+   bigger than the rest. Used on rant-on-starting-anime-analysis.html. */
+.site-main h1.title-even {
+  font-variant: all-small-caps;
+}
+
+/* ---- Quote ---------------------------------------------------------------
+   A set-off quotation, with an optional source line under it.
+   Used on rant-on-starting-anime-analysis.html.
+   ------------------------------------------------------------------------ */
+
+.site-main .quote {
+  margin: 1.2em 0;
+  padding-left: 1em;
+  border-left: 2px solid var(--color-rule);
+}
+
+.site-main .quote p {
+  margin: 0;
+  font-style: italic;
+  text-align: left;
+}
+
+.site-main .quote .quote__source {
+  margin-top: 0.3em;
+  font-style: normal;
+  color: var(--color-accent-dark);
+}
+
+.site-main .quote .quote__source::before {
+  content: "— ";
+}
+
 /* Longer notes written under a list entry stay upright */
 .reading-list .notes {
   font-style: normal;

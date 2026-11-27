@@ -10,6 +10,8 @@ A plain HTML and CSS site with no build step. Served at `feranno.github.io/2026/
 ├── about.html                    About
 ├── letters.html                  Letter to Yvonne
 ├── article.html                  Essays, grouped by creator
+├── rant-on-starting-anime-analysis.html   Rant, linked from the top of article.html
+├── gings-unrivaled-genius.html            Essay on Ging, linked from the top of article.html
 ├── speculative_technology.html   Notes on future technologies (uses MathJax)
 ├── courses.html                  Undergraduate courses
 └── assets/
