@@ -13,11 +13,19 @@ const main = document.querySelector("main");
 const titleEl = document.querySelector("#section-title");
 const blurbEl = document.querySelector("#section-blurb");
 const cardsEl = document.querySelector("#cards");
+const proseEl = document.querySelector("#prose");
 const popup = document.querySelector("#popup");
 const popupImg = document.querySelector("#popup-img");
 const popupTitle = document.querySelector("#popup-title");
 const popupNote = document.querySelector("#popup-note");
 const popupKicker = document.querySelector("#popup-kicker");
+const popupVideo = document.querySelector("#popup-video");
+const popupSubtitle = document.querySelector("#popup-subtitle");
+const popupFacts = document.querySelector("#popup-facts");
+const popupGallery = document.querySelector("#popup-gallery");
+const lightbox = document.querySelector("#lightbox");
+const lightboxImg = document.querySelector("#lightbox-img");
+const lightboxCaption = document.querySelector("#lightbox-caption");
 
 // Menu buttons ↔ sections, so each can find the other
 const buttonFor = new Map();     // section → button
@@ -35,6 +43,8 @@ export function openSection(section) {
   document.body.style.setProperty("--accent", section.color);
 
   cardsEl.replaceChildren(...section.items.map(buildCard));
+  proseEl.hidden = !section.body?.length;
+  proseEl.replaceChildren(...(section.body ?? []).map(buildBlock));
 
   animate(main, [{ opacity: 0, transform: "translateX(24px)" }, { opacity: 1, transform: "none" }],
     { duration: 600, easing: "ease-out" });
@@ -59,6 +69,42 @@ export function goHome() {
 export function sectionFromMenu(element) {
   const button = element.closest("nav button");
   return button ? sectionFor.get(button) : null;
+}
+
+
+// ---------- Written text (a section's `body`) ----------
+
+// Make one block of text. See the about section in content.js for the shapes.
+function buildBlock(block, index) {
+  const el = document.createElement("section");
+  el.className = "prose-block";
+
+  const para = (text) => {
+    const p = document.createElement("p");
+    p.textContent = text;
+    el.appendChild(p);
+  };
+  const list = (tag, lines) => {
+    const ul = document.createElement(tag);
+    for (const text of lines) {
+      const li = document.createElement("li");
+      li.textContent = text;
+      ul.appendChild(li);
+    }
+    el.appendChild(ul);
+  };
+
+  if (block.lead) para(block.lead);                // e.g. "Feranno", a plain first line
+  if (block.text) para(block.text);
+  if (block.label) para(block.label);              // e.g. "here are some things i like:"
+  if (block.list) list("ul", block.list);          // one bullet per line
+  if (block.inline) list("ul", [block.inline.join(", ")]);   // one bullet, items separated by commas
+  if (block.numbered) list("ol", block.numbered);
+
+  animate(el, [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }],
+    { duration: 500, delay: 200 + index * 90, easing: "ease-out", fill: "backwards" });
+
+  return el;
 }
 
 
@@ -100,12 +146,69 @@ function openPopup(item) {
   popupKicker.textContent = state.current?.name ?? "";   // e.g. "anime"
   popupTitle.textContent = item.title;
   popupNote.textContent = item.note ?? "";         // empty if there's no note
-  popupImg.hidden = !item.image;
-  if (item.image) {
+
+  popupSubtitle.hidden = !item.subtitle;
+  popupSubtitle.textContent = item.subtitle ?? "";
+
+  // Facts: label/value pairs
+  popupFacts.hidden = !item.facts?.length;
+  popupFacts.replaceChildren(...(item.facts ?? []).flatMap(([label, value]) => {
+    const dt = document.createElement("dt");
+    dt.textContent = label;
+    const dd = document.createElement("dd");
+    dd.textContent = value;
+    return [dt, dd];
+  }));
+
+  // Gallery: thumbnails that open the lightbox
+  popupGallery.hidden = !item.gallery?.length;
+  popupGallery.replaceChildren(...(item.gallery ?? []).map(buildThumb));
+
+  // Video takes the poster's place when there is one
+  const hasVideo = Boolean(item.video);
+  popupVideo.hidden = !hasVideo;
+  popupImg.hidden = hasVideo || !item.image;
+  if (hasVideo) {
+    popupVideo.poster = item.poster ?? "";
+    popupVideo.src = item.video;
+    popupVideo.setAttribute("aria-label", item.title);
+  } else {
+    popupVideo.removeAttribute("src");
+    popupVideo.load();                             // drop any earlier video
+  }
+  if (!hasVideo && item.image) {
     popupImg.src = item.image;
     popupImg.alt = item.title;
   }
+
   popup.showModal();
+  // Autoplay (muted) unless the visitor prefers reduced motion; then it waits for play
+  if (hasVideo && !REDUCED_MOTION) popupVideo.play().catch(() => {});
+}
+
+// One gallery thumbnail
+function buildThumb({ src, caption }) {
+  const li = document.createElement("li");
+  const button = document.createElement("button");
+  button.type = "button";
+  button.setAttribute("aria-label", `Enlarge: ${caption}`);
+  const img = document.createElement("img");
+  img.src = src;
+  img.alt = "";                                    // the caption below names it
+  img.loading = "lazy";
+  const label = document.createElement("span");
+  label.textContent = caption;
+  button.append(img, label);
+  button.addEventListener("click", () => openLightbox(src, caption));
+  li.appendChild(button);
+  return li;
+}
+
+function openLightbox(src, caption) {
+  lightboxImg.src = src;
+  lightboxImg.alt = caption;
+  lightboxCaption.textContent = caption;
+  lightbox.showModal();
 }
 
 
@@ -137,6 +240,13 @@ export function initPanel() {
   popup.addEventListener("click", (e) => {
     // clicked empty space (not the poster, text, or back button) → close
     if (e.target === popup || e.target.classList.contains("detail")) popup.close();
+  });
+  popup.addEventListener("close", () => popupVideo.pause());   // stop playing once hidden
+
+  // Lightbox: back button, or click anywhere except the image
+  document.querySelector("#lightbox-close").addEventListener("click", () => lightbox.close());
+  lightbox.addEventListener("click", (e) => {
+    if (e.target !== lightboxImg) lightbox.close();
   });
   addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
