@@ -33,12 +33,14 @@ export const SECTIONS = [
     body: [
       {
         lead: "hi! i'm feranno",
-        text: "i study at the university of southern california, currently studying what i enjoy and doing research." },
-      { label: "here are some things i believe in:",
+        text: "i study at the university of southern california, currently taking what i enjoy and doing research." },
+      /*
+        { label: "here are some things i believe in:",
         list: ["agency is a superpower", "taste is learnable", "construct beliefs actively"] },
       { label: "here are some things i like:",
         inline: ["paddling", "serendipitous blogs", "character analysis", "dandelion tea",
                  "little detours"] },
+      */
       { label: "this semester i'm taking:",
         numbered: ["discrete mathematics", "object oriented programming", "probability theory"] },
     ],
