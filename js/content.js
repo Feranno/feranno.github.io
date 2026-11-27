@@ -53,8 +53,8 @@ export const SECTIONS = [
         video: "projects/computer/conditional-jump.mp4",     // replaces the poster in the detail view
         poster: "projects/computer/video-poster.jpg",        // still frame shown before the video loads
         subtitle: "building a general purpose computer, carefully",
-        note: "Running a conditional-jump program that counts up to 255, back down to 0, repeats.\n\n" +
-              "I spent 2–3× more time debugging this thing than building it, because when my program doesn't work like I intended, I have to reason through the entire stack: did I miswire an input, did i burn a chip, do my LEDs needed resistors, did i write my control logic correctly, did i write my assembly code correctly, did i insert the pins for the assembly code correctly. I wanted to give up on this project 70–80 times. Computer architecture is very much a lesson in interaction design.",
+        note: "Running a conditional-jump program that counts up to 255, back down to 0, and repeats.\n\n" +
+              "I spent 2–3× more time debugging this thing than building it, because when my program doesn't work like I intended, I have to reason through the entire stack: did i miswire an input, did i burn a chip, do my LEDs need resistors, did i write my control logic correctly, did i write my assembly code correctly, did i insert the pins for the assembly code correctly. I wanted to give up on this project 70–80 times. Computer architecture is very much a lesson in interaction design.",
         facts: [
           ["RAM",       "16 bytes (4-bit address)"],
           ["ALU",       "8-bit add / subtract"],
