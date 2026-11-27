@@ -34,14 +34,28 @@
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&family=Spectral:ital,wght@0,400;1,400&display=swap">
 
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2026-11-27a">
 
-  <!-- Where `import ... from "three"` downloads from (pinned version, so it never changes under you) -->
+  <!-- Where imports download from.
+       "three" is pinned, so it never changes under you.
+       Our own files carry ?v=: browsers keep JS for ~10 minutes, so after an
+       update, change the version here (and on style.css above) to make every
+       visitor fetch the new files at once instead of mixing old and new. -->
   <script type="importmap">
-    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "./js/main.js": "./js/main.js?v=2026-11-27a",
+      "./js/panel.js": "./js/panel.js?v=2026-11-27a",
+      "./js/scene.js": "./js/scene.js?v=2026-11-27a",
+      "./js/input.js": "./js/input.js?v=2026-11-27a",
+      "./js/audio.js": "./js/audio.js?v=2026-11-27a",
+      "./js/config.js": "./js/config.js?v=2026-11-27a",
+      "./js/content.js": "./js/content.js?v=2026-11-27a",
+      "./js/state.js": "./js/state.js?v=2026-11-27a"
+    } }
   </script>
   <!-- Modules wait for the page to finish loading, so this is safe in <head> -->
-  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/main.js?v=2026-11-27a"></script>
 </head>
 
 <body>
