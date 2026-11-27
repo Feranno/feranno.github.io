@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FL mark studies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
+<!--
+  FL MARK STUDIES
+  Three drafts of the F + L signature, each shown large and at header size
+  with the Thauma line, in the site's midnight and light colors.
+  Every mark is a 96 × 48 SVG made of plain lines, so any of them drops
+  into index.html in place of the current <svg class="mark">.
+-->
+<style>
+:root {
+  --midnight: #0b0d17;   /* the site's dark background */
+  --midnight-ink: #ffffff;
+  --midnight-muted: #8a8fa8;
+  --day: #ffffff;        /* the site's light background */
+  --day-ink: #171717;
+  --day-muted: #6b6b6b;
+  --page: #f4f4f2;
+  --page-ink: #171717;
+  --page-muted: #6b6b6b;
+  --rule: #dcdcd8;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --page: #05060c; --page-ink: #e8e8ee; --page-muted: #8a8fa8; --rule: #23263a; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--page-ink);
+  font: 400 15px/1.55 "Inter", system-ui, sans-serif;
+  padding: 48px max(16px, 4vw) 80px;
+}
+h1, h2 { font-family: "Times New Roman", Times, serif; font-weight: 400; margin: 0; }
+h1 { font-size: 40px; line-height: 1.1; }
+.intro { max-width: 40em; color: var(--page-muted); margin: 12px 0 40px; }
+.intro b { color: var(--page-ink); font-weight: 500; }
+
+.studies { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.study { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.study-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.study-head h2 { font-size: 26px; }
+.study-head h2 i { color: var(--page-muted); font-size: 16px; margin-left: 6px; }
+.replay {
+  font: inherit; font-size: 12px; color: var(--page-muted);
+  background: none; border: 1px solid var(--rule); border-radius: 999px;
+  padding: 3px 11px; cursor: pointer;
+}
+.replay:hover { color: var(--page-ink); }
+
+/* Two swatches per study: the site's midnight and light grounds */
+.swatch {
+  border-radius: 10px; padding: 28px 24px; display: flex; flex-direction: column; gap: 22px;
+}
+.swatch.dark { background: var(--midnight); color: var(--midnight-ink); --muted: var(--midnight-muted); --bg: var(--midnight); }
+.swatch.light { background: var(--day); color: var(--day-ink); --muted: var(--day-muted); --bg: var(--day); border: 1px solid var(--rule); }
+.big { width: 100%; max-width: 260px; height: auto; align-self: center; }
+.header-demo { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.header-demo .mark { width: 104px; height: 52px; margin: -6px 0 0 -6px; }
+.motto { margin: 0; font-family: "Times New Roman", Times, serif; font-size: 16px; }
+.motto .w { font-style: italic; }
+.motto .q { color: var(--muted); }
+.tag { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+.notes { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 14px; }
+.notes li { display: grid; grid-template-columns: 6.5em 1fr; gap: 10px; }
+.notes b { font-weight: 500; }
+.notes span { color: var(--page-muted); }
+
+/* ---------- Shared mark styles: thin line, drawn on load ---------- */
+.mark, .big { overflow: visible; fill: none; stroke: currentColor; stroke-linecap: square; stroke-linejoin: miter; }
+.mark .ln, .big .ln {
+  stroke-dasharray: 1; stroke-dashoffset: 1;
+  animation: trace .9s ease-in-out forwards;
+  animation-delay: calc(.25s + var(--i, 0) * .45s);
+}
+.mark .fade, .big .fade { opacity: 0; animation: fade .35s ease forwards; animation-delay: calc(.25s + var(--i, 0) * .45s); }
+@keyframes trace { to { stroke-dashoffset: 0; } }
+@keyframes fade { to { opacity: 1; } }
+
+/* A: Trace. Hollow vias take the ground color so the line looks drilled. */
+.trace { stroke-width: 1.6; }
+.trace .via { fill: var(--bg); stroke-width: 1.4; }
+
+/* B: Crossing. Same weight as the current mark. */
+.crossing { stroke-width: 1.6; }
+
+/* C: Hairline. Thick verticals, hairline horizontals, like the site's serif. */
+.hairline .v { stroke-width: 2.6; stroke-linecap: butt; }
+.hairline .h { stroke-width: 1.1; stroke-linecap: butt; }
+.hairline .s { stroke-width: 1.1; stroke-linecap: butt; }
+
+@media (max-width: 980px) { .studies { grid-template-columns: minmax(0, 1fr); max-width: 520px; } }
+@media (prefers-reduced-motion: reduce) {
+  .mark .ln, .big .ln, .mark .fade, .big .fade { animation-duration: .01s; animation-delay: 0s; }
+}
+</style>
+</head>
+<body>
+  <h1>FL mark studies</h1>
+  <p class="intro">Three drafts of your signature, each shown large and at header size on the site's <b>midnight</b> and <b>light</b> grounds. All three keep what you liked: thin lines, letters you have to look at twice, uneven lengths, and a mark that draws itself.</p>
+
+  <div class="studies">
+
+    <!-- ===================== A. TRACE ===================== -->
+    <section class="study" id="a">
+      <div class="study-head"><h2>A. Trace <i>built · kept</i></h2><button class="replay" type="button">replay</button></div>
+      <div class="swatch dark">
+        <svg class="big trace" viewBox="0 0 96 48" aria-label="Trace mark">
+          <!-- F on its side, corners cut at 45° the way a circuit board routes a wire -->
+          <path class="ln" style="--i:0" pathLength="1" d="M6 6V36L12 42H64"/>
+          <path class="ln" style="--i:1" pathLength="1" d="M34 42V30"/>
+          <!-- L flipped and turned, one chamfered corner -->
+          <path class="ln" style="--i:1.6" pathLength="1" d="M34 6H84L90 12V30"/>
+          <!-- vias: the wire starts and ends in a drilled hole -->
+          <circle class="via fade" style="--i:2.8" cx="6" cy="6" r="2.4"/>
+          <circle class="via fade" style="--i:2.8" cx="90" cy="30" r="2.4"/>
+        </svg>
+        <div class="header-demo">
+          <svg class="mark trace" viewBox="0 0 96 48" aria-hidden="true">
+            <path class="ln" style="--i:0" pathLength="1" d="M6 6V36L12 42H64"/>
+            <path class="ln" style="--i:1" pathLength="1" d="M34 42V30"/>
+            <path class="ln" style="--i:1.6" pathLength="1" d="M34 6H84L90 12V30"/>
+            <circle class="via fade" style="--i:2.8" cx="6" cy="6" r="2.4"/>
+            <circle class="via fade" style="--i:2.8" cx="90" cy="30" r="2.4"/>
+          </svg>
+          <p class="motto"><span class="w">Thauma</span> <span class="q">(θαῦμα)</span> <i class="q">n.</i> wonder</p>
+        </div>
+      </div>
+      <div class="swatch light">
+        <div class="header-demo">
+          <svg class="mark trace" viewBox="0 0 96 48" aria-hidden="true">
+            <path class="ln" style="--i:0" pathLength="1" d="M6 6V36L12 42H64"/>
+            <path class="ln" style="--i:1" pathLength="1" d="M34 42V30"/>
+            <path class="ln" style="--i:1.6" pathLength="1" d="M34 6H84L90 12V30"/>
+            <circle class="via fade" style="--i:2.8" cx="6" cy="6" r="2.4"/>
+            <circle class="via fade" style="--i:2.8" cx="90" cy="30" r="2.4"/>
+          </svg>
+          <p class="motto"><span class="w">Thauma</span> <span class="q">(θαῦμα)</span> <i class="q">n.</i> wonder</p>
+        </div>
+      </div>
+      <ul class="notes">
+        <li><b>Idea</b><span>Your current mark, routed like a wire on a circuit board: 45° corners and a drilled via at each end.</span></li>
+        <li><b>Why yours</b><span>It comes from the breadboard computer, the thing you built from logic chips up.</span></li>
+        <li><b>Values</b><span>Building from first principles; "construct beliefs actively".</span></li>
+        <li><b>Risk</b><span>The most literal of the three. It says "engineer" before it says "you".</span></li>
+      </ul>
+    </section>
+
+    <!-- ===================== B. CROSSING ===================== -->
+    <section class="study" id="b">
+      <div class="study-head"><h2>B. Crossing <i>faith · in use</i></h2><button class="replay" type="button">replay</button></div>
+      <div class="swatch dark">
+        <svg class="big crossing" viewBox="0 0 96 48" aria-label="Crossing mark">
+          <!-- Upright F: tall stem, a short top arm, and a long middle arm.
+               The middle arm is longer than the top one, the reverse of a normal F. -->
+          <path class="ln" style="--i:0" pathLength="1" d="M6 42V8H13"/>
+          <!-- Upright L. Its stem crosses the F's middle arm, and where they
+               cross they make a Latin cross: arms 12 either side, 12 above,
+               22 below. -->
+          <path class="ln" style="--i:1" pathLength="1" d="M18 8V42H90"/>
+          <path class="ln" style="--i:1.9" pathLength="1" d="M6 20H30"/>
+        </svg>
+        <div class="header-demo">
+          <svg class="mark crossing" viewBox="0 0 96 48" aria-hidden="true">
+            <path class="ln" style="--i:0" pathLength="1" d="M6 42V8H13"/>
+            <path class="ln" style="--i:1" pathLength="1" d="M18 8V42H90"/>
+            <path class="ln" style="--i:1.9" pathLength="1" d="M6 20H30"/>
+          </svg>
+          <p class="motto"><span class="w">Thauma</span> <span class="q">(θαῦμα)</span> <i class="q">n.</i> wonder</p>
+        </div>
+      </div>
+      <div class="swatch light">
+        <div class="header-demo">
+          <svg class="mark crossing" viewBox="0 0 96 48" aria-hidden="true">
+            <path class="ln" style="--i:0" pathLength="1" d="M6 42V8H13"/>
+            <path class="ln" style="--i:1" pathLength="1" d="M18 8V42H90"/>
+            <path class="ln" style="--i:1.9" pathLength="1" d="M6 20H30"/>
+          </svg>
+          <p class="motto"><span class="w">Thauma</span> <span class="q">(θαῦμα)</span> <i class="q">n.</i> wonder</p>
+        </div>
+      </div>
+      <ul class="notes">
+        <li><b>Idea</b><span>The F and L stand upright and overlap. Where the F's middle arm crosses the L's stem, they form a small Latin cross. The arm is drawn last, so the cross appears at the end.</span></li>
+        <li><b>Why yours</b><span>Easy to read as F and L, and the cross is there only if you look for it.</span></li>
+        <li><b>Values</b><span>Your faith, from your About page, kept quiet rather than announced.</span></li>
+        <li><b>Risk</b><span>Upright letters are more conventional, so it's less unusual than A or C. Use it only if you want that meaning in your mark.</span></li>
+      </ul>
+    </section>
+
+    <!-- ===================== C. HAIRLINE ===================== -->
+    <section class="study" id="c">
+      <div class="study-head"><h2>C. Hairline <i>wonder · kept</i></h2><button class="replay" type="button">replay</button></div>
+      <div class="swatch dark">
+        <svg class="big hairline" viewBox="0 0 96 48" aria-label="Hairline mark">
+          <!-- Same layout as the current mark (thirds), but drawn like a
+               serif typeface: verticals thick, horizontals hairline. -->
+          <path class="ln v" style="--i:0" pathLength="1" d="M6 6V42"/>
+          <path class="ln h" style="--i:0.7" pathLength="1" d="M4.7 42H64"/>
+          <path class="ln v" style="--i:1.2" pathLength="1" d="M34 42V30"/>
+          <path class="ln h" style="--i:1.6" pathLength="1" d="M34 6H91.3"/>
+          <path class="ln v" style="--i:2.2" pathLength="1" d="M90 6V30"/>
+          <!-- Hairline serifs on the three open ends, like the site's Times -->
+          <path class="s fade" style="--i:2.9" d="M2 6H10M30 30H38M86 30H94"/>
+        </svg>
+        <div class="header-demo">
+          <svg class="mark hairline" viewBox="0 0 96 48" aria-hidden="true">
+            <path class="ln v" style="--i:0" pathLength="1" d="M6 6V42"/>
+            <path class="ln h" style="--i:0.7" pathLength="1" d="M4.7 42H64"/>
+            <path class="ln v" style="--i:1.2" pathLength="1" d="M34 42V30"/>
+            <path class="ln h" style="--i:1.6" pathLength="1" d="M34 6H91.3"/>
+            <path class="ln v" style="--i:2.2" pathLength="1" d="M90 6V30"/>
+            <path class="s fade" style="--i:2.9" d="M2 6H10M30 30H38M86 30H94"/>
+          </svg>
+          <p class="motto"><span class="w">Thauma</span> <span class="q">(θαῦμα)</span> <i class="q">n.</i> wonder</p>
+        </div>
+      </div>
+      <div class="swatch light">
+        <div class="header-demo">
+          <svg class="mark hairline" viewBox="0 0 96 48" aria-hidden="true">
+            <path class="ln v" style="--i:0" pathLength="1" d="M6 6V42"/>
+            <path class="ln h" style="--i:0.7" pathLength="1" d="M4.7 42H64"/>
+            <path class="ln v" style="--i:1.2" pathLength="1" d="M34 42V30"/>
+            <path class="ln h" style="--i:1.6" pathLength="1" d="M34 6H91.3"/>
+            <path class="ln v" style="--i:2.2" pathLength="1" d="M90 6V30"/>
+            <path class="s fade" style="--i:2.9" d="M2 6H10M30 30H38M86 30H94"/>
+          </svg>
+          <p class="motto"><span class="w">Thauma</span> <span class="q">(θαῦμα)</span> <i class="q">n.</i> wonder</p>
+        </div>
+      </div>
+      <ul class="notes">
+        <li><b>Idea</b><span>Your current layout drawn like a serif typeface: thick verticals, hairline horizontals, and small serifs on the open ends.</span></li>
+        <li><b>Why yours</b><span>It matches the Times of the Thauma line, so the mark and the words look like they belong together.</span></li>
+        <li><b>Values</b><span>"Taste is learnable": the contrast between thick and thin is a craft detail people notice without knowing why.</span></li>
+        <li><b>Risk</b><span>The hairlines get faint below about 80px wide, so the phone size needs testing.</span></li>
+      </ul>
+    </section>
+
+  </div>
+
+<script>
+  // Replay: restart a study's line animations by re-inserting its SVGs
+  document.querySelectorAll('.replay').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.study').querySelectorAll('svg').forEach(svg => {
+        const fresh = svg.cloneNode(true);
+        svg.replaceWith(fresh);
+      });
+    });
+  });
+</script>
+</body>
+</html>

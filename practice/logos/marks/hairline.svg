@@ -1,0 +1,11 @@
+<!-- FL mark, "Hairline" (kept alternate). The F on its side and the flipped
+     L in thirds, drawn like a serif face: thick verticals, hairline
+     horizontals, hairline serifs on the open ends. -->
+<svg class="mark" viewBox="0 0 96 48" fill="none" stroke="currentColor" stroke-linecap="butt" aria-hidden="true">
+  <path pathLength="1" stroke-width="2.6" d="M6 6V42"/>
+  <path pathLength="1" stroke-width="1.1" d="M4.7 42H64"/>
+  <path pathLength="1" stroke-width="2.6" d="M34 42V30"/>
+  <path pathLength="1" stroke-width="1.1" d="M34 6H91.3"/>
+  <path pathLength="1" stroke-width="2.6" d="M90 6V30"/>
+  <path stroke-width="1.1" d="M2 6H10M30 30H38M86 30H94"/>
+</svg>

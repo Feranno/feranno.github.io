@@ -6,6 +6,7 @@
 import { SECTIONS } from "./content.js";
 import { REDUCED_MOTION } from "./config.js";
 import { state } from "./state.js";
+import { sectionColor, onThemeChange } from "./theme.js";
 
 // Page elements, looked up once
 const nav = document.querySelector("nav");
@@ -18,7 +19,6 @@ const popup = document.querySelector("#popup");
 const popupImg = document.querySelector("#popup-img");
 const popupTitle = document.querySelector("#popup-title");
 const popupNote = document.querySelector("#popup-note");
-const popupKicker = document.querySelector("#popup-kicker");
 const popupVideo = document.querySelector("#popup-video");
 const popupSubtitle = document.querySelector("#popup-subtitle");
 const popupFacts = document.querySelector("#popup-facts");
@@ -40,7 +40,7 @@ export function openSection(section) {
   main.hidden = false;
   titleEl.textContent = section.name;
   blurbEl.textContent = section.blurb;
-  document.body.style.setProperty("--accent", section.color);
+  setAccent();
 
   const photos = section.layout === "photos";
   expanded = null;                                 // any enlarged photo goes with the old cards
@@ -57,6 +57,13 @@ export function openSection(section) {
     button.setAttribute("aria-current", s === section ? "true" : "false");
   }
 }
+
+// --accent: the open section's color in the current theme (its own color at
+// midnight, its gray in light mode). Cards, the menu dot and focus rings use it.
+function setAccent() {
+  if (state.current) document.body.style.setProperty("--accent", sectionColor(state.current, SECTIONS));
+}
+onThemeChange(setAccent);
 
 // Back to the home view
 export function goHome() {
@@ -134,7 +141,7 @@ function buildCard(raw, index) {
   label.textContent = item.title;                  // textContent, never innerHTML (safe from XSS)
   card.appendChild(label);
 
-  card.addEventListener("click", () => openPopup(item));
+  card.addEventListener("click", () => openPopup(item, card));   // the poster grows out of this card
 
   animate(card, [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }],
     { duration: 500, delay: 200 + index * 50, easing: "ease-out", fill: "backwards" });
@@ -236,9 +243,25 @@ addEventListener("resize", placeExpanded);
 
 
 // ---------- Detail view (full poster + notes) ----------
+// Opening: the poster grows out of the card you clicked, the background dims,
+// then the text fades in on the right. Closing reverses it: the poster shrinks
+// back into its card. Every poster opens at the same height, whatever the size
+// of its image file.
 
-function openPopup(item) {
-  popupKicker.textContent = state.current?.name ?? "";   // e.g. "anime"
+const popupText = popup.querySelector(".detail-text");
+const popupBack = document.querySelector("#popup-close");
+const OPEN_MS = 600;
+const CLOSE_MS = 420;
+const EASE_OUT = "cubic-bezier(0.2, 0.7, 0.2, 1)";      // fast start, long gentle landing
+const EASE_IN_OUT = "cubic-bezier(0.4, 0, 0.2, 1)";
+const CLEAR = "transparent";
+// The dialog's dimmed background: --overlay in style.css, which depends on the theme
+const dim = () => getComputedStyle(document.documentElement).getPropertyValue("--overlay").trim();
+
+let openedFrom = null;           // the card the open poster came from
+let closing = false;
+
+async function openPopup(item, card) {
   popupTitle.textContent = item.title;
   popupNote.textContent = item.note ?? "";         // empty if there's no note
 
@@ -276,9 +299,124 @@ function openPopup(item) {
     popupImg.alt = item.title;
   }
 
+  closing = false;
+  openedFrom = card ?? null;
+  const media = hasVideo ? popupVideo : (item.image ? popupImg : null);
+
+  // Size the poster before showing it, so it never flashes at the wrong size.
+  // The card already loaded this image, so decoding it is nearly instant.
+  if (media === popupImg) {
+    popupImg.style.visibility = "hidden";
+    popupImg.style.width = popupImg.style.height = "";
+    await popupImg.decode().catch(() => {});
+  }
+
   popup.showModal();
+  fitPoster();
+  popupImg.style.visibility = "";
+  if (openedFrom) openedFrom.style.visibility = "hidden";   // the card "lifts out" of the grid
+
+  popIn(media);
+
   // Autoplay (muted) unless the visitor prefers reduced motion; then it waits for play
   if (hasVideo && !REDUCED_MOTION) popupVideo.play().catch(() => {});
+}
+
+// Every poster gets the same height, scaled up or down from its file, and never
+// wider than its column: 500px (like anandmaj's book covers), less on short
+// screens so it always fits; on phones, half the screen height (at most 420px).
+const POSTER_HEIGHT = 500;
+const PHONE_POSTER_HEIGHT = 420;
+
+function fitPoster() {
+  if (popupImg.hidden || !popupImg.naturalWidth) return;
+  const phone = matchMedia("(max-width: 800px)").matches;
+  const maxHeight = phone
+    ? Math.min(innerHeight * 0.5, PHONE_POSTER_HEIGHT)
+    : Math.min(innerHeight * 0.68, POSTER_HEIGHT);
+  const maxWidth = popupImg.parentElement.clientWidth;
+  const ratio = popupImg.naturalWidth / popupImg.naturalHeight;
+  let height = maxHeight;
+  let width = height * ratio;
+  if (width > maxWidth) {                          // a wide image: fit the column instead
+    width = maxWidth;
+    height = width / ratio;
+  }
+  popupImg.style.width = `${Math.round(width)}px`;
+  popupImg.style.height = `${Math.round(height)}px`;
+}
+
+// The transform that makes `media` sit exactly over `rect` (the card):
+// same center, same width. One scale for both axes, so the poster never stretches.
+function overCard(media, rect) {
+  const to = media.getBoundingClientRect();
+  const dx = rect.left + rect.width / 2 - (to.left + to.width / 2);
+  const dy = rect.top + rect.height / 2 - (to.top + to.height / 2);
+  return `translate(${dx}px, ${dy}px) scale(${rect.width / to.width})`;
+}
+
+// Is the card still on screen, so it makes sense to fly to or from it?
+function cardRect() {
+  const rect = openedFrom?.getBoundingClientRect();
+  const onScreen = rect && rect.width && rect.bottom > 0 && rect.top < innerHeight;
+  return onScreen ? rect : null;
+}
+
+function popIn(media) {
+  animate(popup, [{ backgroundColor: CLEAR }, { backgroundColor: dim() }],
+    { duration: OPEN_MS * 0.6, easing: "ease-out" });
+
+  const rect = cardRect();
+  if (media && rect && media === popupImg) {
+    // Grow out of the card: start exactly over it, end at full size
+    animate(media, [{ transform: overCard(media, rect) }, { transform: "none" }],
+      { duration: OPEN_MS, easing: EASE_OUT });
+  } else if (media) {
+    // A video (its size isn't known yet) or no card to grow from: rise and grow in place
+    animate(media, [{ opacity: 0, transform: "translateY(20px) scale(0.94)" }, { opacity: 1, transform: "none" }],
+      { duration: OPEN_MS, easing: EASE_OUT });
+  }
+
+  // Text and back button follow once the poster is mostly there
+  for (const el of [popupText, popupBack]) {
+    animate(el, [{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }],
+      { duration: 500, delay: OPEN_MS * 0.45, easing: "ease-out", fill: "backwards" });
+  }
+}
+
+// Close with the reverse motion: text fades, poster shrinks back into its card
+function closePopup() {
+  if (!popup.open || closing) return;
+  const media = !popupImg.hidden ? popupImg : (!popupVideo.hidden ? popupVideo : null);
+  const rect = cardRect();
+  if (REDUCED_MOTION) { popup.close(); return; }
+
+  closing = true;
+  const fill = "forwards";                         // hold the end state until the dialog closes
+  const runs = [
+    popup.animate([{ backgroundColor: dim() }, { backgroundColor: CLEAR }], { duration: CLOSE_MS, easing: EASE_IN_OUT, fill }),
+    popupText.animate([{ opacity: 1 }, { opacity: 0 }], { duration: CLOSE_MS * 0.5, fill }),
+    popupBack.animate([{ opacity: 1 }, { opacity: 0 }], { duration: CLOSE_MS * 0.5, fill }),
+  ];
+  if (media && rect && media === popupImg) {
+    runs.push(media.animate([{ transform: "none" }, { transform: overCard(media, rect) }],
+      { duration: CLOSE_MS, easing: EASE_IN_OUT, fill }));
+  } else if (media) {
+    runs.push(media.animate([{ opacity: 1 }, { opacity: 0, transform: "scale(0.94)" }],
+      { duration: CLOSE_MS, easing: EASE_IN_OUT, fill }));
+  }
+  Promise.all(runs.map((run) => run.finished)).then(() => popup.close(), () => popup.close());
+}
+
+// Runs however the dialog closed: put everything back for next time
+function resetPopup() {
+  closing = false;
+  for (const el of [popup, popupImg, popupVideo, popupText, popupBack]) {
+    for (const run of el.getAnimations()) run.cancel();
+  }
+  if (openedFrom) openedFrom.style.visibility = "";
+  openedFrom = null;
+  popupVideo.pause();                              // stop playing once hidden
 }
 
 // One gallery thumbnail
@@ -331,12 +469,18 @@ export function initPanel() {
 
   // Ways to close things
   document.querySelector(".back").addEventListener("click", goHome);
-  document.querySelector("#popup-close").addEventListener("click", () => popup.close());
+  popupBack.addEventListener("click", closePopup);
   popup.addEventListener("click", (e) => {
     // clicked empty space (not the poster, text, or back button) → close
-    if (e.target === popup || e.target.classList.contains("detail")) popup.close();
+    if (e.target === popup || e.target.classList.contains("detail") ||
+        e.target.classList.contains("detail-poster")) closePopup();
   });
-  popup.addEventListener("close", () => popupVideo.pause());   // stop playing once hidden
+  popup.addEventListener("cancel", (e) => {        // Escape: animate out instead of vanishing
+    e.preventDefault();
+    closePopup();
+  });
+  popup.addEventListener("close", resetPopup);
+  addEventListener("resize", () => { if (popup.open && !closing) fitPoster(); });
 
   // Lightbox: back button, or click anywhere except the image
   document.querySelector("#lightbox-close").addEventListener("click", () => lightbox.close());

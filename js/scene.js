@@ -10,6 +10,7 @@ import {
   SPARK_COUNT, SPARK_TRAVEL, REDUCED_MOTION,
 } from "./config.js";
 import { state } from "./state.js";
+import { palette, sectionColor, onThemeChange } from "./theme.js";
 
 // Build the whole scene. Throws if the browser can't do WebGL
 // (main.js catches that and the site keeps working without 3D).
@@ -140,17 +141,38 @@ export function createScene() {
 
   // ---------- Animation: one small function per job ----------
 
-  // Slow breathing, plus a white pulse on the hovered sphere
+  // ---------- Theme: repaint everything when midnight/light switches ----------
+
+  let colors = palette();                          // the current theme's 3D colors (theme.js)
+
+  function applyTheme() {
+    colors = palette();
+    for (const sphere of spheres) {
+      sphere.color = sectionColor(sphere.section, SECTIONS);
+      sphere.glow.material.color.set(sphere.color);
+      sphere.glow.material.emissive.set(sphere.color);
+    }
+    for (const dot of [haloDot, coreDot]) dot.color.set(colors.dots.color);
+    haloDot.opacity = colors.dots.halo;
+    coreDot.opacity = colors.dots.core;
+    // Additive "light" sparks glow on dark but vanish on white, so light mode draws them normally
+    sparks.material.blending = colors.additiveSparks ? THREE.AdditiveBlending : THREE.NormalBlending;
+    sparks.material.needsUpdate = true;            // blending changes need the shader rebuilt
+  }
+  applyTheme();
+  onThemeChange(applyTheme);
+
+  // Slow breathing, plus a pulse on the hovered sphere (white at midnight, black in light mode)
   function animateSpheres(t) {
-    for (const { section, glow, wire, offset } of spheres) {
+    for (const { section, glow, wire, offset, color } of spheres) {
       const breathe = REDUCED_MOTION ? 1 : 1 + 0.008 * Math.sin(2 * t + offset);
       glow.scale.setScalar(breathe);
       wire.scale.setScalar(breathe);
 
       const hot = section === state.hovered;
-      wire.material.color.set(hot ? "#ffffff" : section.color);
-      wire.material.opacity = hot ? 0.9 : 0.25;
-      glow.material.opacity = hot ? 0.15 : 0.06;
+      wire.material.color.set(hot ? colors.hot : color);
+      wire.material.opacity = colors.wire[hot ? 1 : 0];
+      glow.material.opacity = colors.glow[hot ? 1 : 0];
       glow.material.emissiveIntensity = hot ? 1.5 + 0.3 * Math.sin(10 * t) : 0.4;
     }
   }
@@ -166,7 +188,7 @@ export function createScene() {
     sparks.visible = hovered !== null;
     if (!hovered) return;
 
-    sparks.material.color.set(hovered.color);
+    sparks.material.color.set(sectionColor(hovered, SECTIONS));
     for (let i = 0; i < SPARK_COUNT; i++) {
       const p = sparkData[i];
       const distance = hovered.radius + ((t * p.speed + p.offset) % SPARK_TRAVEL);

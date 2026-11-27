@@ -6,11 +6,13 @@ import { initPanel } from "./panel.js";
 import { createScene } from "./scene.js";
 import { initInput } from "./input.js";
 import { initAudio } from "./audio.js";
+import { initTheme } from "./theme.js";
 
 // 1. The menu, panel and popup. Plain HTML, works on every browser.
 initPanel();
 
-// 2. Background music and its on/off switch (stays hidden if there's no track).
+// 2. The midnight/light switch, and background music (switched off in audio.js).
+initTheme();
 initAudio();
 
 // 3. The 3D scene. If the browser can't do WebGL (old device, disabled

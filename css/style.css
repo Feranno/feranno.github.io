@@ -20,7 +20,29 @@
   --prose-size: 16px;
   --prose-text: #e6e6e6;
   --bullet: #5d6177;      /* dim bullets and list numbers */
+  --overlay: rgba(11, 13, 23, 0.72);         /* behind an opened card */
+  --overlay-strong: rgba(11, 13, 23, 0.92);  /* behind an enlarged diagram */
+  --frost: rgba(11, 13, 23, 0.82);           /* backing for text over the spheres on phones */
+  --shadow: rgba(0, 0, 0, 0.6);              /* under an opened poster */
   /* --accent is set by JavaScript to the open section's color */
+}
+
+/* Light mode (the ☀ button): white page, black text, gray spheres.
+   Same variables, different values, so every rule above switches with it.
+   The spheres' grays live in js/theme.js. */
+:root[data-theme="light"] {
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --text: #171717;
+  --muted: #6b6b6b;
+  --soft: #3d3d3d;
+  --line: #d6d6d6;
+  --prose-text: #262626;
+  --bullet: #a3a3a3;
+  --overlay: rgba(255, 255, 255, 0.8);
+  --overlay-strong: rgba(255, 255, 255, 0.95);
+  --frost: rgba(255, 255, 255, 0.85);
+  --shadow: rgba(0, 0, 0, 0.18);
 }
 
 
@@ -30,6 +52,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
+  transition: background-color 0.4s, color 0.4s;   /* a soft fade when the theme switches */
 }
 
 h1, h2, h3 {
@@ -67,18 +90,85 @@ header, nav, main {
 
 
 /* ---------- 4. Header & menu: pinned to the corners ---------- */
+/* The header is one left-aligned column: the signature mark, then the motto.
+   Everything starts on the same 24px edge as the menu at the bottom-left,
+   so the page has one left axis from top to bottom. */
 header {
   position: fixed;
   top: 24px;
   left: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
 }
 
-header h1 {
+/* Signature mark.
+   Drawn in currentColor, so it switches with the theme like the text does.
+   pathLength="1" in the SVG makes each line length 1, so a dash of 1 pushed
+   off by 1 hides it, and sliding the offset to 0 draws it from start to end.
+   The SVG's first line sits about 5 units in from its left edge, so a small
+   negative margin puts the drawn line, not the invisible box, on the 24px edge. */
+.mark {
+  width: 104px;
+  height: 52px;
+  margin: -6px 0 0 -6px;
+  flex: none;
+  overflow: visible;
+  color: var(--text);
+  stroke: currentColor;
+  stroke-width: 1.6;                        /* viewBox units: about 1.7px on screen */
+  stroke-linecap: square;
+  fill: none;
+  filter: drop-shadow(0 0 6px var(--bg));   /* readable over the spheres */
+  transition: color 0.4s;                   /* fades with the theme switch */
+}
+.mark path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: mark-trace 1.1s ease-in-out 0.3s forwards;
+}
+.mark path:nth-of-type(2) {
+  animation-delay: 0.75s;                   /* the L follows the F */
+}
+.mark path:nth-of-type(3) {
+  animation-delay: 1.3s;                    /* the crossing arm comes last */
+}
+.mark circle {
+  fill: currentColor;
+  stroke: none;
+  opacity: 0;
+  animation: mark-dot 0.3s ease 1.9s forwards;
+}
+@keyframes mark-trace { to { stroke-dashoffset: 0; } }
+@keyframes mark-dot { to { opacity: 1; } }
+
+/* Hidden on screen, still read by screen readers and search engines */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Motto, set like a dictionary entry: the headword and its sense at full
+   strength, the Greek and the part of speech quieter. */
+.motto {
   margin: 0;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 16px;
+  letter-spacing: 0.01em;
+  text-shadow: 0 0 8px var(--bg);           /* readable over the spheres */
 }
-
-header p {
-  margin: 4px 0 0;
+.motto-word {
+  font-style: italic;
+}
+.motto-quiet {
+  color: var(--muted);
+  transition: color 0.4s;
 }
 
 nav {
@@ -110,22 +200,12 @@ nav button.active::before {         /* colored dot before the open section */
   color: var(--accent);
 }
 
-/* Music switch, top-right */
-/* Music controls, top-right: track switch + on/off */
-#sound {
+/* Theme switch, top-right */
+#theme-toggle {
   position: fixed;
   top: 24px;
   right: 24px;
   z-index: 1;
-  display: flex;
-  gap: 8px;
-}
-
-#sound[hidden] {
-  display: none;
-}
-
-#sound button {
   background: none;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -136,8 +216,7 @@ nav button.active::before {         /* colored dot before the open section */
   text-shadow: 0 0 8px var(--bg);
 }
 
-#sound button:hover,
-#sound-toggle[aria-pressed="true"] {
+#theme-toggle:hover {
   color: var(--text);
 }
 
@@ -246,6 +325,10 @@ main h2 {
 
 .card span {
   position: relative;                /* above the image */
+}
+
+.card img + span {                   /* a title over a poster: always white, shadowed */
+  color: #fff;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
 }
 
@@ -339,7 +422,7 @@ main h2 {
   margin: 0;
   padding: 0;
   border: none;
-  background: rgba(11, 13, 23, 0.72);
+  background: var(--overlay);
   backdrop-filter: blur(10px);
   color: var(--text);
   overflow: hidden;
@@ -357,25 +440,35 @@ main h2 {
   background: var(--bg);             /* stays readable when content scrolls under it */
 }
 
-/* Poster and text side by side, centered */
+/* Two equal columns: poster centered in the left one, text starting at the
+   middle of the screen in the right one, both centered vertically */
 .detail {
   box-sizing: border-box;
   height: 100%;
-  display: flex;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
-  justify-content: center;
-  gap: 56px;
-  padding: 80px 48px;
+  gap: clamp(32px, 4vw, 64px);
+  padding: 72px clamp(24px, 5vw, 72px);
 }
 
+.detail-poster {
+  min-width: 0;                      /* let the column shrink below the image's own width */
+  display: flex;
+  justify-content: center;
+}
+
+/* panel.js sets each poster's exact width and height (same height for every
+   poster, whatever its file size); these are fallbacks and the frame */
 .detail-media {
-  max-height: 80vh;                  /* as big as fits... */
-  max-width: min(45vw, 560px);
-  width: auto;
-  height: auto;
-  object-fit: contain;               /* ...and never cropped */
-  border-radius: 12px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  display: block;
+  max-width: 100%;
+  max-height: min(68vh, 500px);      /* same limit panel.js uses for posters */
+  object-fit: contain;               /* never cropped */
+  border-radius: 18px;
+  box-shadow: 0 30px 80px var(--shadow);
 }
 
 .detail-media[hidden] {
@@ -387,6 +480,7 @@ video.detail-media {
 }
 
 .detail-text {
+  justify-self: start;               /* left edge lines up with the middle of the screen */
   max-width: 32em;                   /* about 60 characters a line, like the about text */
   max-height: 80vh;                  /* long project pages scroll inside the column */
   overflow-y: auto;
@@ -471,7 +565,7 @@ video.detail-media {
   margin: 0;
   padding: 0;
   border: none;
-  background: rgba(11, 13, 23, 0.92);
+  background: var(--overlay-strong);
   color: var(--text);
 }
 
@@ -504,43 +598,23 @@ video.detail-media {
   color: var(--muted);
 }
 
-.detail-kicker {                     /* small section label above the title */
-  margin: 0 0 8px;
-  color: var(--accent, var(--muted));
-  font-size: 13px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 #popup h3 {
-  font-size: 44px;
-  line-height: 1.1;
+  font-size: 36px;                   /* sized to sit beside a 500px poster */
+  line-height: 1.15;
   margin: 0 0 16px;
+  text-wrap: balance;                /* long titles break into even lines */
 }
 
 #popup-note {
   margin: 0;
   color: var(--soft);
+  font-size: 18px;
+  line-height: 1.6;
   white-space: pre-line;             /* "\n\n" in a note starts a new paragraph */
 }
 
-/* Entrance: poster rises and grows in, text follows a beat later */
-@media (prefers-reduced-motion: no-preference) {
-  #popup[open] .detail-media {
-    animation: poster-in 0.5s ease-out;
-  }
-  #popup[open] .detail-text {
-    animation: text-in 0.5s 0.15s ease-out backwards;
-  }
-}
-
-@keyframes poster-in {
-  from { opacity: 0; transform: translateY(20px) scale(0.96); }
-}
-
-@keyframes text-in {
-  from { opacity: 0; transform: translateX(16px); }
-}
+/* The opening and closing motion (poster growing out of its card and back)
+   is done in panel.js, because it depends on where the clicked card is. */
 
 
 /* ---------- 8. Accessibility ---------- */
@@ -559,6 +633,10 @@ video.detail-media {
   .card:hover, .card:hover img {
     transform: none;
   }
+  .mark path, .mark circle {        /* the mark appears already drawn */
+    animation-duration: 0.01s;
+    animation-delay: 0s;
+  }
 }
 
 .noscript {
@@ -569,6 +647,19 @@ video.detail-media {
 
 /* ---------- 9. Small screens: keep last so it overrides the rules above ---------- */
 @media (max-width: 800px) {
+  header {
+    gap: 10px;
+  }
+  .mark {
+    width: 80px;
+    height: 40px;
+    margin: -4px 0 0 -4px;                  /* same optical alignment at this size */
+    stroke-width: 1.9;                      /* same on-screen weight at the smaller size */
+  }
+  .motto {
+    font-size: 15px;
+  }
+
   .grid.photos {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -578,38 +669,39 @@ video.detail-media {
     padding: 140px 16px 220px;       /* bottom: room to scroll clear of the fixed menu */
   }
 
-  /* Music controls: stacked, so they clear the name on narrow screens */
-  #sound {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-  }
-
   /* Written text sits over the brightest part of the spheres here, and over
-     the menu, so it gets a dark frosted backing */
+     the menu, so it gets a frosted backing in the page color */
   .prose {
     margin-top: 28px;
     padding: 20px;
     border-radius: 14px;
-    background: rgba(11, 13, 23, 0.82);
+    background: var(--frost);
     backdrop-filter: blur(8px);
   }
 
-  /* Detail view: poster on top, text below, scroll if the note is long */
+  /* Detail view: one column, poster on top, text below, scroll if the note is long */
   .detail {
-    flex-direction: column;
-    justify-content: flex-start;
+    grid-template-columns: 1fr;
+    align-content: start;
     gap: 24px;
     padding: 72px 20px 40px;
     overflow-y: auto;
   }
 
   .detail-media {
-    max-width: 80vw;
-    max-height: 60vh;
+    max-height: min(50vh, 420px);
+  }
+
+  #popup h3 {
+    font-size: 30px;
+  }
+
+  #popup-note {
+    font-size: 17px;
   }
 
   .detail-text {
+    justify-self: stretch;
     max-height: none;                /* the whole view scrolls instead */
     overflow: visible;
   }

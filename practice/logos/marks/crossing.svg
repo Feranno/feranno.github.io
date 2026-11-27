@@ -1,0 +1,8 @@
+<!-- FL mark, "Crossing" (in use on the homepage). Upright F and L; the F's
+     middle arm crosses the L's stem as a small Latin cross. Paste inline in
+     place of <svg class="mark">; it draws in currentColor. -->
+<svg class="mark" viewBox="0 0 96 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" aria-hidden="true">
+  <path pathLength="1" d="M6 42V8H13"/>
+  <path pathLength="1" d="M18 8V42H90"/>
+  <path pathLength="1" d="M6 20H30"/>
+</svg>

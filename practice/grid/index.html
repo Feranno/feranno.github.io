@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feranno · 8-bit computer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500&display=swap">
+<!--
+  GRID STUDY
+  A plain HTML and CSS page built on the techniques of a bordered-grid
+  portfolio, in the same palette: black, white and grey. Every word and picture on it comes from the tinycpu
+  project: its README, your notes and your video.
+
+  Each technique is marked TECHNIQUE 1–10 below. Open DevTools, find the
+  matching rule, and change its numbers to see what it does.
+-->
+<style>
+/* ---------- Tokens: change these first ---------- */
+:root {
+  /* Her palette: pure black ground, white type, mid-grey rules.
+     There is no accent hue; emphasis comes from brightness alone
+     (grey at rest, white on hover). */
+  --paper: #000000;
+  --ink: #ffffff;
+  --muted: #808080;          /* white at 50% opacity on black */
+  --line: #9b9b9b;           /* rgb(155,155,155), her border color */
+  --accent: #ffffff;
+  --frame-bg: #141414;       /* behind pictures while they load */
+  color-scheme: dark;        /* dark scrollbars to match */
+  --side: minmax(10em, 1fr); /* width of the left column */
+  --top: 6em;                /* height of the top row */
+  --font: "Barlow", "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 300 15px/1.5 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
+
+/* ==========================================================================
+   TECHNIQUE 1. A visible grid is the whole layout.
+   Two columns (a narrow index, a wide content area) and two rows
+   (a short header, everything else). Each of the four cells is a "quad".
+   ========================================================================== */
+.frame {
+  display: grid;
+  grid-template-columns: var(--side) 5fr;
+  grid-template-rows: var(--top) 1fr;
+  height: 100dvh;
+  position: relative;
+}
+
+/* ==========================================================================
+   TECHNIQUE 2. Borders drawn with gradients.
+   A plain border can only be one color. Here every quad paints two layers:
+     - a solid paper fill clipped to the padding box (the inside)
+     - a diagonal gradient clipped to the border box (shows only in the 1px border)
+   The gradient goes from paper (invisible) to line color, so each border
+   fades out toward one corner instead of ending in a hard box.
+   ========================================================================== */
+
+/* TECHNIQUE 3. Animate a CSS variable with @property.
+   Browsers can't animate a normal custom property, because they don't know
+   its type. Registering it as a <percentage> lets transitions and keyframes
+   move it, so the border fade can slide. No JavaScript needed. */
+@property --fade {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+
+.quad {
+  --dir: to bottom right;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--paper), var(--paper)) padding-box,
+    linear-gradient(var(--dir), var(--paper) var(--fade), var(--line)) border-box;
+  position: relative;
+  min-width: 0;
+  /* On load: --fade slides from 100% (border invisible) to 45% (partly drawn). */
+  animation: draw 1.2s ease-out forwards;
+  /* On hover: the fade and the corner radius change smoothly. */
+  transition: --fade .8s ease, border-radius .5s ease;
+}
+@keyframes draw { to { --fade: 45%; } }
+
+/* Each quad's gradient points toward the centre crossing, so the lines are
+   strongest where they meet and fade toward the page edges. */
+.q-mark  { --dir: to bottom right; }
+.q-head  { --dir: to bottom left; }
+.q-index { --dir: to top right; }
+.q-main  { --dir: to top left; animation-delay: .2s; }
+
+/* ==========================================================================
+   TECHNIQUE 4. Hover effects you barely notice.
+   Hovering a quad rounds the corner nearest the crossing and draws its
+   border all the way. Each quad gets a different radius, so the grid feels
+   hand-tuned instead of uniform.
+   ========================================================================== */
+.quad:hover { --fade: 0%; }
+.q-mark:hover  { border-end-end-radius: 24px; }
+.q-head:hover  { border-end-start-radius: 32px; }
+.q-index:hover { border-start-end-radius: 40px; }
+.q-main:hover  { border-start-start-radius: 64px; }
+
+/* ==========================================================================
+   TECHNIQUE 5. A small mark where the lines cross.
+   One rotated square, placed exactly on the grid intersection. It fades in
+   after the borders finish drawing.
+   ========================================================================== */
+.cross {
+  position: absolute;
+  left: calc(max(10em, 100vw / 6) - 4px);   /* matches var(--side) */
+  top: calc(var(--top) - 4px);
+  width: 8px; height: 8px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  transform: rotate(45deg);
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  animation: appear .4s ease 1s forwards;
+}
+@keyframes appear { to { opacity: 1; } }
+
+/* ==========================================================================
+   TECHNIQUE 6. A logo that draws itself.
+   pathLength="1" tells the browser to treat every path as length 1, so one
+   dash of length 1 covers it exactly. Starting with the dash pushed off
+   (dashoffset 1) and sliding it to 0 draws the line from start to end.
+   ========================================================================== */
+.q-mark { display: grid; place-items: center; }
+.q-mark svg { width: 76px; height: 38px; stroke: var(--ink); stroke-width: 1.5; fill: none; stroke-linecap: square; overflow: visible; }
+.q-mark path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: trace 1.1s ease-in-out .3s forwards; }
+.q-mark path + path { animation-delay: .9s; }
+.q-mark circle { fill: var(--ink); stroke: none; opacity: 0; animation: appear .3s ease 1.9s forwards; }
+@keyframes trace { to { stroke-dashoffset: 0; } }
+
+/* ---------- Header ---------- */
+.q-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 2em;
+}
+.name { font-weight: 500; }
+.name small { display: block; font-weight: 300; color: var(--muted); font-size: 1em; }
+.q-head { gap: 1.5em; }
+.q-head .link { white-space: nowrap; }
+
+/* ==========================================================================
+   TECHNIQUE 7. The index is the figure list.
+   The left column lists the five records of the build. Hovering, focusing
+   or tapping one swaps the picture in the corner. The quiet "fig." labels
+   are the same device as version numbers: a little system that says the
+   page was organised, not just filled.
+   ========================================================================== */
+.q-index {
+  display: flex; flex-direction: column; justify-content: flex-end; gap: .15em;
+  padding: 2em;
+}
+.q-index .label { margin-bottom: .6em; }
+.fig-link {
+  display: grid; grid-template-columns: 2.8em 1fr; align-items: baseline; white-space: nowrap;
+  color: var(--muted); transition: color .25s, transform .25s;
+}
+.fig-link .no { font-size: .78em; letter-spacing: .04em; opacity: .7; }
+.fig-link:hover, .fig-link:focus-visible { color: var(--ink); transform: translateX(3px); outline: none; }
+.fig-link[aria-pressed="true"] { color: var(--ink); }
+.fig-link[aria-pressed="true"] .no { color: var(--accent); opacity: 1; }
+
+/* ---------- Main content ---------- */
+/* Three tracks: two text columns and a narrower one for the picture, which
+   sits at the bottom of its track so it never covers the text. */
+.q-main {
+  display: grid;
+  grid-template-columns: minmax(0, 19em) minmax(0, 19em) minmax(11em, 1fr);
+  gap: 3em; padding: 2em;
+  overflow-y: auto;
+}
+.col { min-width: 0; }
+.group .inline-fig { border-bottom: .5px dotted var(--ink); }
+.group .inline-fig:hover { color: var(--accent); border-color: var(--accent); }
+.limits li { display: grid; grid-template-columns: 5.6em 1fr; gap: .5em; padding: .15em 0; }
+.limits li b { font-weight: 400; }
+
+/* Small uppercase labels at reduced opacity set the rhythm. */
+.label {
+  text-transform: uppercase; font-size: .72em; letter-spacing: .08em;
+  opacity: .65; margin: 0 0 .3em;
+}
+.group { margin-bottom: 1.6em; font-size: .95em; text-wrap: pretty; }
+.group p { margin: 0; }
+.group ul { list-style: none; margin: 0; padding: 0; }
+.group li { padding: .05em 0; }
+.group .num { font-variant-numeric: tabular-nums; }
+blockquote { margin: 0; }
+blockquote p + p { margin-top: .5em; }
+
+/* ==========================================================================
+   TECHNIQUE 8. Links: thin underline and an arrow that turns.
+   The arrow points down-right (↘) at rest and rotates a quarter turn to
+   point up-right (↗) on hover, meaning "this goes somewhere".
+   ========================================================================== */
+.link { border-bottom: .5px solid var(--ink); }
+.link:hover { color: var(--accent); border-color: var(--accent); }
+.arrow {
+  display: inline-block;
+  font-family: system-ui, sans-serif;
+  font-size: .75em;
+  margin-left: .25em;
+  transition: transform .25s;
+}
+.link:hover .arrow { transform: rotate(-90deg); }
+
+/* ==========================================================================
+   TECHNIQUE 9. One picture at a time, crossfaded.
+   All five records are stacked in the same frame. Only the active one is
+   visible; switching fades one out while the next fades in, and the
+   picture eases from a slight zoom so the change feels physical.
+   ========================================================================== */
+.reel {
+  align-self: end; justify-self: end;
+  width: 100%; max-width: 19em;
+  margin: 0;
+}
+.stage {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: .5em;
+  overflow: hidden;
+  background: var(--frame-bg);
+}
+.stage > * {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0; transform: scale(1.04);
+  transition: opacity .5s ease, transform .9s ease;
+}
+.stage > .on { opacity: 1; transform: scale(1); }
+.reel figcaption {
+  display: flex; justify-content: space-between; gap: 1em;
+  font-size: .8em; color: var(--muted); margin-top: .5em;
+}
+#capno { white-space: nowrap; }
+
+/* ==========================================================================
+   TECHNIQUE 10. A separate phone layout.
+   On a narrow screen the four-quad grid would be cramped, so it becomes one
+   bordered column: header, picture with its figure list, then the text.
+   ========================================================================== */
+/* Medium windows: the picture drops below the two text columns. */
+@media (max-width: 1100px) {
+  .q-main { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .reel { grid-column: 1 / -1; justify-self: start; max-width: 17em; }
+}
+
+@media (max-width: 640px) {
+  .frame {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto 1fr;
+    height: auto; min-height: 100dvh;
+    padding: 1em;
+  }
+  .q-mark { display: none; }
+  .cross { display: none; }
+  .quad { --dir: to bottom; }
+  .q-head { padding: 1.2em; }
+  .q-index { order: 2; flex-direction: row; flex-wrap: wrap; justify-content: flex-start; gap: .3em 1.1em; padding: 1em 1.2em; }
+  .q-index .label { width: 100%; margin: 0; }
+  .fig-link { display: inline-flex; gap: .35em; }
+  .fig-link:hover { transform: none; }
+  .q-main { order: 3; grid-template-columns: minmax(0, 1fr); gap: 0; padding: 1.2em; overflow: visible; }
+  .reel { grid-column: auto; max-width: none; order: -1; margin-bottom: 1.6em; }
+  .stage { aspect-ratio: 4 / 3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quad, .cross, .q-mark path, .q-mark circle { animation-duration: .01s; animation-delay: 0s; transition: none; }
+  .stage > * { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="quad q-mark" aria-hidden="true">
+    <!-- A wide monogram drawn from lines, like a trace on a circuit board.
+         Left: an F turned on its side (rotated 90° counter-clockwise), so its
+         stem lies along the bottom and its two arms stand up.
+         Right: an L flipped horizontally, then rotated 90° counter-clockwise,
+         so it hangs from the top. The two letters sit in opposite corners and
+         overlap in the middle; the dot marks the end of the trace.
+
+         The asymmetry is set in thirds of the full height (36 units):
+           F's long arm (left edge) .... 36  full height
+           L's leg (right edge) ........ 24  two thirds
+           F's short arm (middle) ...... 12  one third
+         The L's top line starts directly above F's short arm (x = 34), so
+         the two letters share one vertical axis even though they don't touch.
+         The F's stem runs past that axis, under the L, to x = 64. -->
+    <svg viewBox="0 0 96 48">
+      <path pathLength="1" d="M6 6V42H64M34 42V30"/>
+      <path pathLength="1" d="M34 6H90V30"/>
+      <circle cx="90" cy="30" r="2"/>
+    </svg>
+  </div>
+
+  <header class="quad q-head">
+    <div class="name">feranno <small>( I wanted to understand how computers worked )</small></div>
+    <a class="link" href="https://github.com/Feranno/tinycpu">source<span class="arrow">↘</span></a>
+  </header>
+
+  <nav class="quad q-index" aria-label="Figures">
+    <p class="label">Figures</p>
+    <button class="fig-link" data-fig="0" aria-pressed="true"><span class="no">fig. 1</span><span>jump</span></button>
+    <button class="fig-link" data-fig="1" aria-pressed="false"><span class="no">fig. 2</span><span>build</span></button>
+    <button class="fig-link" data-fig="2" aria-pressed="false"><span class="no">fig. 3</span><span>signals</span></button>
+    <button class="fig-link" data-fig="3" aria-pressed="false"><span class="no">fig. 4</span><span>cycle</span></button>
+    <button class="fig-link" data-fig="4" aria-pressed="false"><span class="no">fig. 5</span><span>fibonacci</span></button>
+  </nav>
+
+  <main class="quad q-main">
+    <!-- Text from the Projects section of your LinkedIn, lightly edited.
+         Thoughts in no particular order, so the groups are labelled, not numbered. -->
+    <div class="col">
+      <div class="group">
+        <p class="label">Built</p>
+        <p>A fully functional 8-bit computer, using breadboards, 7400 TTL chips, wires, and EEPROMs for the control logic.</p>
+      </div>
+      <div class="group">
+        <p class="label">How it runs</p>
+        <p>A von Neumann machine starts from an input program. In run mode the program counter starts, fetching instructions and data into the instruction register. The EEPROMs decode each instruction into <button class="inline-fig" data-fig="2">control signals</button> using combinational logic. Once decoded, the clock steps through the microinstructions <span class="num">T1, T2, T3, T4, T5</span> in a <button class="inline-fig" data-fig="3">loop</button>, and the program counter increments.</p>
+      </div>
+      <div class="group">
+        <p class="label">Why Turing completeness matters</p>
+        <p>One of the most powerful implications of a machine being Turing complete, memory limits aside, is the general-purpose computer. It separated hardware from software: one machine serves many uses. A computer is not just a calculator, a cipher, or a differential equation solver. With software we can build abstractions and imagine human interfaces.</p>
+      </div>
+      <div class="group">
+        <p class="label">Programs it ran</p>
+        <ul class="num">
+          <li>6 × 8 = 48</li>
+          <li><button class="inline-fig" data-fig="4">0, 1, 1, 2, 3, 5, 8 … 233</button></li>
+          <li>count to 255, down to 0, repeat</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="group">
+        <p class="label">System design</p>
+        <p>Testing module by module forced me to think about system design. With any computer system, question your assumptions. Does this need to exist? Some requirements can be removed before we engineer a feature we don't need.</p>
+      </div>
+      <div class="group">
+        <p class="label">Debugging</p>
+        <p>Latency and crashes come from bottlenecks: CPU bound, memory bound, I/O bound, thermally throttled, or faulty assembly. They can be a nightmare to debug, because several explanations may be interlinked or cascade into each other.</p>
+      </div>
+      <div class="group">
+        <p class="label">Where toy models stop working</p>
+        <ul class="limits">
+          <li><b>Scale</b><span>How does an operating system work? How do we compile programming languages?</span></li>
+          <li><b>Reliability</b><span>Electrical signals sometimes fault. How do we correct errors when signals aren't communicated?</span></li>
+          <li><b>Use cases</b><span>Operating systems, distributed systems, FPGAs, ASICs, AI accelerators, telecom chips, embedded systems, GPUs, automotive control.</span></li>
+        </ul>
+      </div>
+      <div class="group">
+        <p class="label">Thanks</p>
+        <p>Mr. Wang, Charles Petzold, Ben Eater, and my dad.</p>
+      </div>
+    </div>
+
+    <figure class="reel">
+      <div class="stage">
+        <video class="on" src="../../projects/computer/conditional-jump.mp4" poster="../../projects/computer/video-poster.jpg" autoplay muted loop playsinline aria-label="The computer running a conditional jump program"></video>
+        <img src="../../projects/computer/cover.jpg" alt="The finished breadboard computer, display showing 055" loading="lazy">
+        <img src="../../projects/computer/control-signals.jpg" alt="Hand-drawn diagram of the bus, registers and control signals" loading="lazy">
+        <img src="../../projects/computer/fetch-decode-execute.jpg" alt="Notes on the fetch, decode, execute cycle" loading="lazy">
+        <img src="../../projects/computer/fibonacci-program.jpg" alt="The Fibonacci program written out in assembly by hand" loading="lazy">
+      </div>
+      <figcaption><span id="cap">conditional jump, running on the breadboard</span><span id="capno">fig. 1</span></figcaption>
+    </figure>
+  </main>
+
+  <span class="cross" aria-hidden="true"></span>
+</div>
+
+<script>
+  // TECHNIQUE 7 + 9: the figure list drives the picture in the corner.
+  const CAPTIONS = [
+    'conditional jump, running on the breadboard',
+    'the finished build, showing 055',
+    'the bus and its control signals, by hand',
+    'fetch, decode, execute',
+    'the fibonacci program, in assembly',
+  ];
+  const links = [...document.querySelectorAll('.fig-link')];
+  const items = [...document.querySelectorAll('.stage > *')];
+  let pinned = 0;
+
+  function show(i) {
+    items.forEach((el, j) => el.classList.toggle('on', j === i));
+    document.getElementById('cap').textContent = CAPTIONS[i];
+    document.getElementById('capno').textContent = 'fig. ' + (i + 1);
+  }
+  links.forEach((a, i) => {
+    a.addEventListener('mouseenter', () => show(i));
+    a.addEventListener('focus', () => show(i));
+    a.addEventListener('click', () => {
+      pinned = i;
+      links.forEach((b, j) => b.setAttribute('aria-pressed', j === i));
+      show(i);
+    });
+  });
+  // Words in the text that name a figure open it too.
+  document.querySelectorAll('.inline-fig').forEach(b => {
+    const i = +b.dataset.fig;
+    b.addEventListener('mouseenter', () => show(i));
+    b.addEventListener('mouseleave', () => show(pinned));
+    b.addEventListener('click', () => links[i].click());
+  });
+  // Leaving the list returns to the figure you clicked last.
+  document.querySelector('.q-index').addEventListener('mouseleave', () => show(pinned));
+</script>
+</body>
+</html>
