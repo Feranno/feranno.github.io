@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2.5 -2.5 89 89">
+  <!-- Tab icon: the Crossing FL mark on a transparent square, so it sits
+       directly on the browser's tab strip. Like Tiffany Huang's icon, the mark
+       runs edge to edge with no background. The lines are near-black on
+       light browser themes and white on dark ones. -->
+  <style>
+    path { fill: none; stroke: #171717; stroke-width: 4; stroke-linecap: square; }
+    @media (prefers-color-scheme: dark) { path { stroke: #ffffff; } }
+  </style>
+  <g transform="translate(0 25)">
+    <path d="M0 34V0H5"/>
+    <path d="M12 0V34H84"/>
+    <path d="M0 12H24"/>
+  </g>
+</svg>
