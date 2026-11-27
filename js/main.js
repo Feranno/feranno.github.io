@@ -15,7 +15,7 @@ document.documentElement.dataset.started = "true";
 // 1. The menu, panel and popup. Plain HTML, works on every browser.
 initPanel();
 
-// 2. The midnight/light switch, and background music (switched off in audio.js).
+// 2. The midnight/light switch, and the music player (bottom-right).
 initTheme();
 initAudio();
 

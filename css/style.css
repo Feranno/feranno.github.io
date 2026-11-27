@@ -221,6 +221,148 @@ nav button.active::before {         /* colored dot before the open section */
 }
 
 
+/* Music player, bottom-right (js/audio.js). Deliberately quiet: a play/pause
+   glyph and the track name in the menu's muted text, with a hairline under
+   the name that fills as the track plays. Clicking the name opens the
+   playlist above it. */
+#player {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: min(300px, calc(100vw - 48px));
+  font-size: 13px;
+}
+
+.player-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.player-btn,
+.player-title {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  text-shadow: 0 0 8px var(--bg);   /* readable over the spheres */
+}
+
+.player-btn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+
+.player-btn svg {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.player-btn:hover,
+.player-title:hover,
+#player.playing .player-btn,
+#player.playing .player-title {
+  color: var(--text);
+}
+
+.player-title {
+  position: relative;
+  min-width: 0;
+  padding-bottom: 4px;              /* room for the progress hairline */
+  text-align: left;
+}
+
+.player-name {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Progress: a hairline under the track name, only while something has played */
+.player-progress {
+  position: absolute;
+  left: 26px;                       /* lines up with the start of the name */
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  pointer-events: none;
+}
+
+.player-progress span {
+  display: block;
+  height: 100%;
+  background: currentColor;
+  color: var(--text);
+  opacity: 0.6;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s linear;
+}
+
+.player-bar {
+  position: relative;
+}
+
+/* Waiting for the stream: the glyph breathes */
+#player.loading .player-btn {
+  animation: player-wait 1s ease-in-out infinite alternate;
+}
+
+@keyframes player-wait {
+  to { opacity: 0.35; }
+}
+
+/* The playlist: titles only, opening upward */
+.player-list {
+  width: min(300px, calc(100vw - 48px));
+  max-height: min(60vh, 420px);
+  margin: 0 0 12px;
+  padding: 6px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--frost);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.player-list[hidden] {
+  display: none;
+}
+
+.player-list button {
+  width: 100%;
+  padding: 5px 8px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+}
+
+.player-list button:hover,
+.player-list button[aria-current] {
+  color: var(--text);
+}
+
+
 /* ---------- 5. Content panel: the right side of the screen ---------- */
 main {
   position: relative;
@@ -680,6 +822,12 @@ video.detail-media {
   main {
     margin-left: 0;
     padding: 140px 16px 220px;       /* bottom: room to scroll clear of the fixed menu */
+  }
+
+  /* The music player stays bottom-right, beside the menu */
+  #player {
+    right: 16px;
+    max-width: calc(100vw - 140px);
   }
 
   /* Written text sits over the brightest part of the spheres here, and over
