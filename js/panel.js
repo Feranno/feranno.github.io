@@ -89,9 +89,19 @@ function buildBlock(block, index) {
   const el = document.createElement("section");
   el.className = "prose-block";
 
+  // text is a string, or a list of strings and { text, href } links
   const para = (text) => {
     const p = document.createElement("p");
-    p.textContent = text;
+    for (const part of [].concat(text)) {
+      if (typeof part === "string") {
+        p.append(part);
+      } else {
+        const a = document.createElement("a");
+        a.href = part.href;
+        a.textContent = part.text;                 // textContent, never innerHTML
+        p.appendChild(a);
+      }
+    }
     el.appendChild(p);
   };
   const list = (tag, lines) => {

@@ -52,6 +52,16 @@
   font-style: italic;
 }
 
+/* The creator's name in bold, sitting right on top of their list */
+.site-main .creator {
+  margin: 1.8em 0 0.4em;
+  text-align: left;
+}
+
+.creator + .reading-list {
+  margin-top: 0;
+}
+
 /* Longer notes written under a list entry stay upright */
 .reading-list .notes {
   font-style: normal;

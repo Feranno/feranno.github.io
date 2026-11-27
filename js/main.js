@@ -8,6 +8,10 @@ import { initInput } from "./input.js";
 import { initAudio } from "./audio.js";
 import { initTheme } from "./theme.js";
 
+// Tell index.html the site started, so it doesn't also load js/bundle.js
+// (the stand-in used when the page is opened from disk).
+document.documentElement.dataset.started = "true";
+
 // 1. The menu, panel and popup. Plain HTML, works on every browser.
 initPanel();
 

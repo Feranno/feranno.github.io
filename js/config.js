@@ -20,7 +20,8 @@ export const DRAG_SPEED = 0.005;     // radians of spin per pixel dragged
 export const CLICK_TOLERANCE = 5;    // pixels of movement before a press counts as a drag
 
 // Page elements the 3D scene should ignore clicks and hovers on
-export const UI_ELEMENTS = "button, dialog";
+// (links included, so clicking one opens its page instead of going home)
+export const UI_ELEMENTS = "button, dialog, a";
 
 // True if the visitor asked their OS to reduce motion. We then skip
 // decorative animation (auto-spin, panel slides, card cascades).

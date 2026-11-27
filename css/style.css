@@ -281,6 +281,19 @@ main h2 {
   color: var(--bullet);
 }
 
+/* Links inside written text: the section's color, underlined */
+.prose a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+.prose a:hover,
+.prose a:focus-visible {
+  color: var(--accent);
+}
+
 
 /* ---------- 6. Cards: a responsive grid of posters ---------- */
 .grid {

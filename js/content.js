@@ -27,6 +27,8 @@ export const SECTIONS = [
     items: [],
     // Text laid out in the panel instead of cards. One block per group:
     //   { lead, text }       a short first line, then a paragraph
+    //                        text can also mix in links:
+    //                        ["see ", { text: "this page", href: "2026/article.html" }]
     //   { label, list }      a lead-in line, then one bullet per item
     //   { label, inline }    a lead-in line, then one bullet with the items separated by commas
     //   { label, numbered }  a lead-in line, then a numbered list
@@ -165,5 +167,19 @@ export const SECTIONS = [
       { title: "Your Lie in April",           image: "images/your-lie-in-april.jpg" },
     ],
   },
-  { name: "thoughts",   radius: 0.3, color: "#f87171", blurb: "Welcome to Aincrad.", items: [] },
+  {
+    name: "thoughts",
+    radius: 0.3,
+    color: "#f87171",
+    blurb: "Welcome to Aincrad.",
+    items: [],
+    body: [
+      { text: [
+        "I am obsessed with ",
+        { text: "media literacy", href: "2026/article.html" },
+        " and ",
+        { text: "character analysis", href: "2026/letters.html" },
+      ] },
+    ],
+  },
 ];
