@@ -456,6 +456,124 @@ main h2 {
   color: var(--bullet);
 }
 
+/* Lists draft "thoughts": links right under the thoughts text. No year
+   headings; each row is   Mar 2026 │ title          (a link)
+                                     │ channel · 12 min           */
+.margin-list-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prose .margin-list-rows li {              /* undo the about section's bullet spacing */
+  margin: 0;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 5.5em 1fr;
+  column-gap: 12px;
+}
+
+.margin-list-date {
+  color: var(--muted);
+  font: 12px/1.9 var(--font-body);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.margin-list-meta {
+  grid-column: 2;
+  color: var(--muted);
+  font: 12px/1.4 var(--font-body);
+}
+
+/* Lists draft "sphere": its own section, one row per link with a thumbnail */
+.reel {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 44em;
+}
+
+.reel-item {
+  display: grid;
+  grid-template-columns: 168px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.reel-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 8px;
+  background: linear-gradient(160deg, var(--accent, #34d399), var(--bg));
+}
+
+.reel-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s, filter 0.4s;
+}
+
+.reel-item:hover .reel-thumb img {
+  transform: scale(1.06);
+  filter: brightness(1.12);
+}
+
+.reel-length {                             /* a video's length, bottom-right, like YouTube */
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font: 11px/1.4 var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.reel-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.reel-title {
+  font: 17px/1.35 var(--font-prose);
+}
+
+.reel-item:hover .reel-title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.reel-meta {
+  color: var(--muted);
+  font: 12px/1.4 var(--font-body);
+}
+
+@media (max-width: 640px) {
+  .reel-item { grid-template-columns: 120px 1fr; gap: 12px; }
+  .reel-title { font-size: 15px; }
+}
+
+/* A picture in written text (thoughts: the World Seed) */
+.prose-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1.5em 0 0;
+  border-radius: 12px;
+}
+
 /* Links inside written text: the section's color, underlined */
 .prose a {
   color: inherit;
@@ -470,35 +588,46 @@ main h2 {
 }
 
 
-/* ---------- Tabs: filters above the cards (projects: 1D 2D 3D 4D) ----------
-   Radio marks in a row, like huang-tiffany.github.io: ○ open, ● chosen */
+/* ---------- Tabs: filters above the cards ----------
+   Three looks, set per section with tabStyle in content.js (panel.js builds
+   them; practice/anime-tabs/ compares them):
+     .tabs-marks    radio marks in a row, like huang-tiffany.github.io (projects)
+     .tabs-index    large serif tabs with counts, plus an all · anime · films row
+     .tabs-shelves  jump links; the cards below are grouped under headings */
 #tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 22px;
   margin: 8px 0 22px;
 }
 
 #tabs[hidden] { display: none; }
 
 #tabs button {
-  display: flex;
-  align-items: center;
-  gap: 7px;
   padding: 0;
   border: none;
   background: none;
   color: var(--muted);
-  font: 13px/1 var(--font-body);
-  letter-spacing: 0.04em;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color 0.2s, border-color 0.2s;
 }
 
 #tabs button:hover,
 #tabs button[aria-pressed="true"] { color: var(--text); }
 
-#tabs button::before {
+/* Marks: ○ ALL ○ 1D ○ 2D, ● for the chosen one */
+.tab-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+}
+
+.tab-row button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font: 13px/1 var(--font-body);
+  letter-spacing: 0.04em;
+}
+
+.tab-row button::before {
   content: "";
   width: 11px;
   height: 11px;
@@ -507,9 +636,95 @@ main h2 {
   box-sizing: border-box;
 }
 
-#tabs button[aria-pressed="true"]::before {
+.tab-row button[aria-pressed="true"]::before {
   background: currentColor;
   box-shadow: inset 0 0 0 2px var(--bg);
+}
+
+/* Index: past²⁸ 2026⁰ 2027⁰ in the display serif, the chosen one underlined
+   in the section color; a quiet all · anime · films row beneath */
+.tab-years {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 30px;
+}
+
+.tab-years button {
+  padding-bottom: 6px;
+  border-bottom: 1px solid transparent;
+  font: 400 30px/1 var(--font-display);
+}
+
+.tab-years button[aria-pressed="true"] {
+  border-bottom-color: var(--accent, var(--text));
+}
+
+.tab-years sup {
+  margin-left: 4px;
+  font: 11px/1 var(--font-body);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  vertical-align: super;
+}
+
+.tab-kinds {
+  display: flex;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.tab-kinds button {
+  font: 12px/1 var(--font-body);
+  letter-spacing: 0.06em;
+}
+
+.tab-kinds button[aria-pressed="true"] {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Shelves: the row only jumps to a heading; nothing is hidden */
+.tab-jumps {
+  display: flex;
+  gap: 18px;
+}
+
+.tab-jumps button {
+  font: 13px/1 var(--font-body);
+  letter-spacing: 0.04em;
+}
+
+.tab-jumps button::after {
+  content: " ↓";
+  color: var(--muted);
+}
+
+.shelf-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 40px 0 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font: 400 30px/1 var(--font-display);
+  scroll-margin-top: 24px;           /* a jump leaves a little room above the heading */
+}
+
+.shelf-head:first-child {
+  margin-top: 0;
+}
+
+.shelf-count {
+  font: 12px/1 var(--font-body);
+  color: var(--muted);
+}
+
+/* A tab with nothing in it yet */
+.empty-note {
+  margin: 4px 0 12px;
+  color: var(--muted);
+  font-style: italic;
 }
 
 .card-tag {                             /* the card's tab in brackets under its title */

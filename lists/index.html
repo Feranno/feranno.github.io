@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<!--
+  Lists: links worth keeping, like anniehu.com/lists.
+  Annie's table (date on the left, the title as a link on the right), newest
+  first by when each was published, in the site's midnight colors and fonts.
+  Data: ../js/lists.js (add a link there; this page sorts and draws it).
+  Linked from the thoughts section.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>lists</title>
+  <meta name="description" content="Links Feranno keeps coming back to, newest first.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&family=Spectral:ital@0;1&display=swap">
+  <style>
+    :root {
+      --bg: #0b0d17; --text: #e8e8ef; --muted: #8a8fa3; --faint: #5d6177; --line: rgba(255, 255, 255, 0.09);
+      --accent: #f0abfc;
+      --font-body: "Inter", sans-serif; --font-display: "Instrument Serif", serif; --font-prose: "Spectral", Times, serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-body); }
+    main { max-width: 880px; margin: 0 auto; padding: 80px 24px 120px; }
+
+    .home { display: inline-block; margin-bottom: 28px; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font: 13px var(--font-body); text-decoration: none; }
+    .home:hover { color: var(--text); border-color: var(--text); }
+    h1 { margin: 0 0 36px; font: 400 64px/1 var(--font-display); }
+    h2 { margin: 0 0 10px; font: 500 13px/1 var(--font-body); letter-spacing: 0.04em; }
+    h2 small { color: var(--muted); font-weight: 400; }
+
+    /* Annie's table: a small header row, hairlines between rows */
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 10px 14px; text-align: left; font: 500 11px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); border-bottom: 1px solid var(--line); }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: baseline; }
+    td.date { width: 8.5em; white-space: nowrap; color: var(--muted); font: 13px/1.5 var(--font-body); font-variant-numeric: tabular-nums; }
+    td.link { font: 16px/1.45 var(--font-prose); }
+    td.link a { color: var(--text); text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.25); text-underline-offset: 3px; }
+    td.link a:hover { text-decoration-color: var(--accent); }
+    td.link .by { color: var(--muted); font: 13px var(--font-body); white-space: nowrap; }
+    td.link .by::before { content: " — "; }
+    tr:hover td { background: rgba(255, 255, 255, 0.025); }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 48px; }
+      th.date-head { display: none; }
+      td { display: block; border: none; padding: 0 4px; }
+      td.date { padding-top: 12px; width: auto; font-size: 12px; }
+      td.link { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="home" href="../?open=thoughts">← home</a>
+    <h1>lists</h1>
+
+    <h2>Links <small id="count"></small></h2>
+    <table>
+      <thead><tr><th class="date-head">Date</th><th>Link</th></tr></thead>
+      <tbody id="links"></tbody>
+    </table>
+  </main>
+
+  <script type="module">
+    import { newestFirst, formatDate } from "../js/lists.js";
+
+    const links = newestFirst();
+    document.querySelector("#count").textContent = `(${links.length})`;
+    document.querySelector("#links").replaceChildren(...links.map((link) => {
+      const row = document.createElement("tr");
+      const date = document.createElement("td");
+      date.className = "date";
+      date.textContent = formatDate(link.published);
+      const cell = document.createElement("td");
+      cell.className = "link";
+      const a = document.createElement("a");
+      a.href = link.url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = link.title;                  // textContent, never innerHTML
+      const by = document.createElement("span");
+      by.className = "by";
+      by.textContent = link.by;
+      cell.append(a, by);
+      row.append(date, cell);
+      return row;
+    }));
+  </script>
+</body>
+</html>

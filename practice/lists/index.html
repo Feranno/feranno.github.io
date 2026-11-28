@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lists studies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
+<!--
+  LISTS STUDIES
+  Three drafts of a links list like anniehu.com/lists, each a different
+  placement AND design. All three read the same data, js/lists.js, and are
+  live in the frames below:
+    A  ../../lists/                               its own page
+    B  ../../?open=thoughts&lists=thoughts        inside the thoughts panel
+    C  ../../?open=lists&lists=sphere             its own sphere
+  CHOSEN: B · Margin (2026-11-28). A's page (lists/index.html) and C are kept as alternates.
+  The site uses LISTS_DRAFT in js/lists.js. Below the drafts: a review of the
+  whole site, with suggested improvements and deletions.
+-->
+<style>
+:root { --page: #f4f4f2; --ink: #171717; --muted: #6b6b6b; --rule: #dcdcd8; --pick: #1f7a4d; --warn: #9a3412; }
+@media (prefers-color-scheme: dark) {
+  :root { --page: #05060c; --ink: #e8e8ee; --muted: #8a8fa8; --rule: #23263a; --pick: #34d399; --warn: #fb923c; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 400 15px/1.55 "Inter", system-ui, sans-serif; padding: 48px max(16px, 4vw) 80px; }
+h1, h2 { font-family: "Times New Roman", Times, serif; font-weight: 400; margin: 0; }
+h1 { font-size: 40px; line-height: 1.1; }
+.intro { max-width: 48em; color: var(--muted); margin: 12px 0 40px; }
+.intro b { color: var(--ink); font-weight: 500; }
+
+.study { display: grid; grid-template-columns: minmax(240px, 330px) 1fr; gap: 28px; padding: 32px 0; border-top: 1px solid var(--rule); }
+.study h2 { font-size: 30px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.study h2 code, .where code { font: 12px/1 ui-monospace, Menlo, monospace; color: var(--muted); }
+.badge { font: 500 11px/1 "Inter", sans-serif; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--pick); color: var(--pick); }
+.badge.second { border-color: var(--muted); color: var(--muted); }
+.where { margin: 6px 0 0; color: var(--muted); }
+.notes dt { margin-top: 14px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.notes dd { margin: 4px 0 0; }
+.open { display: inline-block; margin-top: 18px; color: var(--muted); font-size: 13px; }
+.open:hover { color: var(--ink); }
+
+.frame { position: relative; width: 100%; aspect-ratio: 1280 / 800; overflow: hidden; border-radius: 10px; border: 1px solid var(--rule); background: #0b0d17; }
+.frame iframe { position: absolute; top: 0; left: 0; width: 1280px; height: 800px; border: 0; transform-origin: 0 0; }
+
+.review { border-top: 1px solid var(--rule); padding-top: 32px; margin-top: 8px; max-width: 60em; }
+.review h2 { font-size: 30px; margin-bottom: 6px; }
+.review h3 { font: 500 12px/1 "Inter", sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 28px 0 10px; }
+.review ol { padding-left: 1.3em; margin: 0; }
+.review li { margin: 0 0 12px; }
+.review li b { font-weight: 500; }
+.review .size { color: var(--warn); font-variant-numeric: tabular-nums; }
+.review code { font: 12.5px ui-monospace, Menlo, monospace; }
+
+@media (max-width: 860px) { .study { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<h1>Lists studies</h1>
+<p class="intro">
+  Your first <b>11 links</b>, newest first by when each was <b>published</b> (Mar 2026 back to Dec 2016).
+  Nearly all are character-analysis and animation essays, the exact thing your thoughts section says you're obsessed with,
+  which is why two of the three placements tie the list to thoughts. Each draft is a different <b>place</b> and a different <b>design</b>.
+  The frames are your real site: scroll and click inside them.
+</p>
+
+<section class="study">
+  <div>
+    <h2>A · Ledger <span class="badge second">recommended</span></h2>
+    <p class="where">Its own page, <code>/lists/</code>. Thoughts links to it: “Things I keep coming back to: lists.”</p>
+    <dl class="notes">
+      <dt>Design</dt>
+      <dd>Annie's table: gray date, the title as an underlined link, the channel after a dash. Hairline rows, a count in the heading. Midnight colors and your fonts, the same “← home” pill as Hunters.</dd>
+      <dt>Why yours</dt>
+      <dd>It's what you asked for, and it's the only one that still works at 400 links. It has its own address you can share, it loads instantly (no 3D, no thumbnails), and it's the plainest place to add one line at a time.</dd>
+      <dt>Risk</dt>
+      <dd>It leaves the spheres, so it feels less like your world and more like a document. Easy to forget unless thoughts keeps pointing to it.</dd>
+    </dl>
+    <a class="open" href="../../lists/" target="_blank">open full size ↗</a>
+  </div>
+  <div class="frame"><iframe loading="lazy" title="A: Ledger" src="../../lists/"></iframe></div>
+</section>
+
+<section class="study">
+  <div>
+    <h2>B · Margin <span class="badge">chosen</span></h2>
+    <p class="where">Inside the thoughts panel, under the World Seed.</p>
+    <dl class="notes">
+      <dt>Design</dt>
+      <dd>Grouped by year: a serif year heading, then rows of <i>date · title</i> with the channel underneath. Typography only, no pictures, set in the same column as your thoughts text.</dd>
+      <dt>Why yours</dt>
+      <dd>The links sit right beside the sentence they prove (“media literacy and character analysis”). No new page, no new sphere: thoughts simply gets richer.</dd>
+      <dt>Risk</dt>
+      <dd>Today it's 7 year headings for 11 links, so the years dominate. It gets long fast, inside a narrow panel over the moving spheres. Scroll down in the frame to see it.</dd>
+    </dl>
+    <a class="open" href="../../?open=thoughts&amp;lists=thoughts" target="_blank">open full size ↗</a>
+  </div>
+  <div class="frame"><iframe loading="lazy" title="B: Margin" src="../../?open=thoughts&amp;lists=thoughts"></iframe></div>
+</section>
+
+<section class="study">
+  <div>
+    <h2>C · Reel</h2>
+    <p class="where">Its own sphere: a 7th, pink one at the core, and “lists” in the menu.</p>
+    <dl class="notes">
+      <dt>Design</dt>
+      <dd>One row per link with its video thumbnail and length (12:08), the title in your serif, then <i>channel · date</i>. Thumbnails zoom on hover, like your posters.</dd>
+      <dt>Why yours</dt>
+      <dd>The most visual and the most “you”: it matches the anime and books walls, and it puts the list on the menu as a first-class part of the site.</dd>
+      <dt>Risk</dt>
+      <dd>A 7th nested sphere is very small at the center and crowds the menu. Thumbnails come from YouTube's servers, so a deleted video leaves a gap, and 400 thumbnails is heavy.</dd>
+    </dl>
+    <a class="open" href="../../?open=lists&amp;lists=sphere" target="_blank">open full size ↗</a>
+  </div>
+  <div class="frame"><iframe loading="lazy" title="C: Reel" src="../../?open=lists&amp;lists=sphere"></iframe></div>
+</section>
+
+<section class="review">
+  <h2>Site review</h2>
+  <p class="intro" style="margin-bottom:0">Measured, not guessed: file sizes, what's referenced, and what GitHub Pages actually serves.
+    Nothing below has been changed yet.</p>
+
+  <h3>Delete or shrink (biggest wins first)</h3>
+  <ol>
+    <li><b>The 4K SAP-1 video</b> <code>projects/computer/conditional-jump-4k.mp4</code> is <span class="size">55 MB</span>,
+      and every visitor who opens the computer project downloads it, phones included. The 1080p version
+      (<code>conditional-jump.mp4</code>, <span class="size">6 MB</span>) is already in the folder, unused. Serve that, and keep 4K as a “watch in 4K” link if you want it.</li>
+    <li><b><code>poster-originals/</code> is being published.</b> Three full-size posters (<span class="size">6.7 MB</span>) are committed,
+      so they're on your live site and in every clone. They're backups: keep them on your computer, out of the repo.</li>
+    <li><b><code>music/</code> isn't used any more.</b> The player now streams Chopin from archive.org (<code>js/chopin.js</code>), so the two local
+      tracks (<span class="size">16 MB</span>) are dead weight. You asked earlier to keep these files; that was before the player switched to streaming.
+      Your call: keep a copy off-site and remove them from the repo.</li>
+    <li><b>Unused files:</b> <code>images/fl-logo.png</code>, <code>images/vagabond.jpg</code> (Vagabond left the books list),
+      and <code>projects/computer/conditional-jump-topdown.mp4</code> (<span class="size">6.4 MB</span>, not committed yet).</li>
+  </ol>
+
+  <h3>Improve</h3>
+  <ol>
+    <li><b>Hunters is orphaned.</b> Its only link was “I like collecting things,” which you removed. Add it to the lists page (or thoughts) so people can find it.</li>
+    <li><b>The link-preview description is stale.</b> It still says “My Universe: a personal site…”. That's what shows when someone pastes your link into a message.</li>
+    <li><b>Notes.</b> The opened-poster view is built around a note on the right, but only Frieren has one. Even one line per favorite would make the detail view worth opening.</li>
+    <li><b>Anime now holds films.</b> Consider a name that fits both, and fill the 2026 / 2027 tabs (they say “nothing here yet”).</li>
+    <li><b>Lists: when you saved it.</b> Annie's dates are when <i>she</i> saved a link; yours are when it was <i>published</i>. Adding an optional “added” date would let you show both, or sort by your own discovery.</li>
+    <li><b><code>practice/</code> is public.</b> Logo studies, these drafts and the SAP-1 tests are all reachable on the live site (<span class="size">14 MB</span>, including a 12 MB board video).
+      That's fine as an open notebook; if you'd rather it weren't, keep it unpublished.</li>
+  </ol>
+</section>
+
+<script>
+  const fit = () => document.querySelectorAll(".frame").forEach((frame) => {
+    frame.querySelector("iframe").style.transform = `scale(${frame.clientWidth / 1280})`;
+  });
+  addEventListener("resize", fit);
+  fit();
+</script>
+</body>
+</html>

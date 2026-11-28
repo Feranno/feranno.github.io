@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anime tab studies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
+<!--
+  ANIME TAB STUDIES
+  Three ways to split the anime section (now anime + films) into
+  past / 2026 / 2027. Each one is the real site, live in a frame, opened with
+    ../../?open=anime&tabs=<style>
+  so what you see here is exactly what visitors would get.
+  CHOSEN: A · Index (2026-11-28). B and C are kept here as alternates.
+  All three are built into js/panel.js; the site uses the one named by
+  tabStyle in js/content.js (anime section). Change that word to switch.
+-->
+<style>
+:root {
+  --page: #f4f4f2;
+  --ink: #171717;
+  --muted: #6b6b6b;
+  --rule: #dcdcd8;
+  --pick: #1f7a4d;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --page: #05060c; --ink: #e8e8ee; --muted: #8a8fa8; --rule: #23263a; --pick: #34d399; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 400 15px/1.55 "Inter", system-ui, sans-serif;
+  padding: 48px max(16px, 4vw) 80px;
+}
+h1, h2 { font-family: "Times New Roman", Times, serif; font-weight: 400; margin: 0; }
+h1 { font-size: 40px; line-height: 1.1; }
+.intro { max-width: 46em; color: var(--muted); margin: 12px 0 44px; }
+.intro b { color: var(--ink); font-weight: 500; }
+
+.study {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) 1fr;
+  gap: 28px;
+  padding: 32px 0;
+  border-top: 1px solid var(--rule);
+}
+.study h2 { font-size: 30px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.study h2 code { font: 12px/1 ui-monospace, Menlo, monospace; color: var(--muted); }
+.badge {
+  font: 500 11px/1 "Inter", sans-serif; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 4px 8px; border-radius: 999px; border: 1px solid var(--pick); color: var(--pick);
+}
+.badge.second { border-color: var(--muted); color: var(--muted); }
+.notes dt { margin-top: 14px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.notes dd { margin: 4px 0 0; }
+.open { display: inline-block; margin-top: 18px; color: var(--muted); font-size: 13px; }
+.open:hover { color: var(--ink); }
+
+/* The live site at a real laptop size (1280 × 800), scaled to fit the column */
+.frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1280 / 800;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+  background: #0b0d17;
+}
+.frame iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1280px;
+  height: 800px;
+  border: 0;
+  transform-origin: 0 0;
+}
+
+@media (max-width: 860px) {
+  .study { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<h1>Anime tab studies</h1>
+<p class="intro">
+  The anime section now holds <b>43 anime and 16 films</b>, split into <b>past · 2026 · 2027</b>.
+  It has to sort two ways at once: <i>when</i> you watched something, and <i>what</i> it is.
+  Each option below answers that differently. The frames are your real site; scroll and click inside them.
+  For now everything is in <b>past</b>, so 2026 and 2027 show “nothing here yet.”
+</p>
+
+<section class="study">
+  <div>
+    <h2>A · Index <span class="badge">chosen</span> <code>tabStyle: "index"</code></h2>
+    <dl class="notes">
+      <dt>Idea</dt>
+      <dd>The years are large serif tabs with counts, like chapter headings: <i>past</i>⁵⁹ 2026⁰ 2027⁰. One year at a time.
+        A quiet <i>all · anime · films</i> row underneath.</dd>
+      <dt>Why yours</dt>
+      <dd>It's the only option that answers both questions. Merging films into anime makes that second filter worth having.
+        The serif matches your section titles, so the years read as part of the page, not as controls.</dd>
+      <dt>Risk</dt>
+      <dd>Two rows of controls instead of one, and it looks different from projects. Large tabs use more height before the posters start.</dd>
+    </dl>
+    <a class="open" href="../../?open=anime&amp;tabs=index" target="_blank">open full size ↗</a>
+  </div>
+  <div class="frame"><iframe loading="lazy" title="Index style" src="../../?open=anime&amp;tabs=index"></iframe></div>
+</section>
+
+<section class="study">
+  <div>
+    <h2>B · Marks <span class="badge second">runner-up</span> <code>tabStyle: "marks"</code></h2>
+    <dl class="notes">
+      <dt>Idea</dt>
+      <dd>The same radio row as projects: ○ ALL ○ past ○ 2026 ○ 2027. (When studied, films carried a small <i>( film )</i> tag under the title; those tags were later removed, so with this style anime and films would look alike.)</dd>
+      <dt>Why yours</dt>
+      <dd>It's what you pointed at. One system across the site: once a visitor learns projects, they know anime. The quietest option, so the posters do the talking.</dd>
+      <dt>Risk</dt>
+      <dd>It only filters by year. Anime and films are told apart by a tiny tag, and with ALL first, the 16 films sit at the very bottom of 59 posters.</dd>
+    </dl>
+    <a class="open" href="../../?open=anime&amp;tabs=marks" target="_blank">open full size ↗</a>
+  </div>
+  <div class="frame"><iframe loading="lazy" title="Marks style" src="../../?open=anime&amp;tabs=marks"></iframe></div>
+</section>
+
+<section class="study">
+  <div>
+    <h2>C · Shelves <code>tabStyle: "shelves"</code></h2>
+    <dl class="notes">
+      <dt>Idea</dt>
+      <dd>Nothing is hidden. Each year is a shelf with its own heading and count, stacked down the page.
+        The row at the top turns into jump links: past ↓ 2026 ↓ 2027 ↓.</dd>
+      <dt>Why yours</dt>
+      <dd>It reads like a timeline of your watching, and a visitor never misses anything behind a tab. Best once every year has a good number of entries.</dd>
+      <dt>Risk</dt>
+      <dd>Right now it's one 59-poster shelf with two empty headings far below it. Long page, and no anime/film split.</dd>
+    </dl>
+    <a class="open" href="../../?open=anime&amp;tabs=shelves" target="_blank">open full size ↗</a>
+  </div>
+  <div class="frame"><iframe loading="lazy" title="Shelves style" src="../../?open=anime&amp;tabs=shelves"></iframe></div>
+</section>
+
+<script>
+  // Scale each 1280-wide live frame down to its column's width
+  const fit = () => document.querySelectorAll(".frame").forEach((frame) => {
+    frame.querySelector("iframe").style.transform = `scale(${frame.clientWidth / 1280})`;
+  });
+  addEventListener("resize", fit);
+  fit();
+</script>
+</body>
+</html>

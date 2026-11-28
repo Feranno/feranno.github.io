@@ -8,6 +8,7 @@ import { REDUCED_MOTION } from "./config.js";
 import { state } from "./state.js";
 import { sectionColor, onThemeChange } from "./theme.js";
 import { initSap1 } from "./sap1.js";
+import { newestFirst, formatDate, formatMonth, formatMinutes, formatLength, previewImage } from "./lists.js";
 
 // Page elements, looked up once
 const nav = document.querySelector("nav");
@@ -55,6 +56,7 @@ export function openSection(section) {
   wantedColumns = section.columns ?? (photos ? 4 : 6);
   showTabs(section);
   layColumns(true);
+  if (section.layout === "links") cardsEl.replaceChildren(buildReel());   // lists draft "sphere"
   proseEl.hidden = !section.body?.length;
   proseEl.replaceChildren(...(section.body ?? []).map(buildBlock));
 
@@ -103,8 +105,10 @@ const narrow = matchMedia("(max-width: 800px)");
 function layColumns(force) {
   const n = narrow.matches ? Math.min(3, wantedColumns) : wantedColumns;
   if (n === shownColumns && !force) return;
+  if (state.current?.layout === "links") return;   // a list of links, not columns of cards
   shownColumns = n;
-  const shown = tiles.filter((tile) => !tab || tile.dataset.tab === tab);
+  const shown = tiles.filter((tile) =>
+    (!tab || tile.dataset.tab === tab) && (!kind || tile.dataset.kind === kind));
 
   // One band of columns; tile k goes to column k % n
   const band = (list, offset) => {
@@ -120,11 +124,28 @@ function layColumns(force) {
     return row;
   };
 
+  // Shelves: every tab at once, each under its own heading
+  if (tabStyle === "shelves" && sectionTabs.length) {
+    cardsEl.replaceChildren(...sectionTabs.flatMap((name) => {
+      const group = shown.filter((tile) => tile.dataset.tab === name);
+      const head = document.createElement("h3");
+      head.className = "shelf-head";
+      head.id = shelfId(name);
+      head.append(name);
+      const count = document.createElement("span");
+      count.className = "shelf-count";
+      count.textContent = group.length;
+      head.appendChild(count);
+      return [head, group.length ? band(group, 0) : emptyNote()];
+    }));
+    return;
+  }
+
   // An enlarged photo opens in a full-width row after its own row, as on
   // anandmaj.com/artwork: the columns stop there and carry on below it.
   const at = expanded ? shown.indexOf(expanded.photo) : -1;
   if (at < 0) {
-    cardsEl.replaceChildren(band(shown, 0));
+    cardsEl.replaceChildren(shown.length || !tiles.length ? band(shown, 0) : emptyNote());
     return;
   }
   const cut = (Math.floor(at / n) + 1) * n;
@@ -136,34 +157,112 @@ narrow.addEventListener("change", () => layColumns());
 
 
 // ---------- Tabs ----------
-// A section with `tabs` (projects: 1D 2D 3D 4D) gets a row of radio marks
-// above the cards, like huang-tiffany.github.io's work page: ○ ALL ○ 1D ...
-// Each card names its tab with `tab`, shown in brackets under its title.
+// A section with `tabs` gets filters above its cards. Each card names its tab
+// with `tab`, and can name a `kind` (anime: "film"). Three looks, chosen with
+// `tabStyle` in content.js. To preview one without editing, add it to the
+// address: ?tabs=index  (practice/anime-tabs/ compares all three)
+//   "marks"    radio marks in a row, like huang-tiffany.github.io:
+//              ○ ALL ○ 1D ○ 2D ...  (projects)
+//   "index"    large serif tabs with a count, one tab at a time, and a small
+//              all · anime · films filter when the section has `kinds`
+//   "shelves"  nothing hidden: every tab is a shelf with its own heading;
+//              the row above jumps to them
 
+const TAB_STYLES = ["marks", "index", "shelves"];
 let tab = null;                                    // the chosen tab, or null for all
+let kind = null;                                   // the chosen kind (index only), or null for all
+let tabStyle = "marks";
+let sectionTabs = [];
 
-function showTabs(section) {
-  tab = null;
-  const tabs = section.tabs ?? [];
-  tabsEl.hidden = !tabs.length;
-  if (!tabs.length) { tabsEl.replaceChildren(); return; }
+const shelfId = (name) => `shelf-${String(name).replace(/\W+/g, "-")}`;
+const countIn = (name) => tiles.filter((tile) => tile.dataset.tab === name).length;
 
-  const choices = [null, ...tabs];                 // ALL first
-  const buttons = choices.map((name) => {
+function emptyNote() {
+  const p = document.createElement("p");
+  p.className = "empty-note";
+  p.textContent = "nothing here yet.";
+  return p;
+}
+
+// A row of buttons, one per choice; pressing one runs `pick` and marks it
+function choiceRow(choices, label, isChosen, pick, className) {
+  const row = document.createElement("div");
+  row.className = className;
+  const buttons = choices.map((choice) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.textContent = name ?? "ALL";
+    label(b, choice);
     b.addEventListener("click", (e) => {
       if (e.detail > 0) b.blur();                  // keep the spacebar for the music
-      tab = name;
+      pick(choice);
       mark();
-      layColumns(true);
     });
     return b;
   });
-  const mark = () => buttons.forEach((b, k) => b.setAttribute("aria-pressed", String(choices[k] === tab)));
+  const mark = () => buttons.forEach((b, k) => b.setAttribute("aria-pressed", String(isChosen(choices[k]))));
   mark();
-  tabsEl.replaceChildren(...buttons);
+  row.append(...buttons);
+  return row;
+}
+
+function showTabs(section) {
+  sectionTabs = section.tabs ?? [];
+  const asked = new URLSearchParams(location.search).get("tabs");
+  tabStyle = TAB_STYLES.includes(asked) ? asked : (section.tabStyle ?? "marks");
+  kind = null;
+  // index shows one tab at a time, starting with the first that has cards
+  tab = tabStyle === "index" ? (sectionTabs.find(countIn) ?? sectionTabs[0] ?? null) : null;
+
+  tabsEl.hidden = !sectionTabs.length;
+  tabsEl.className = sectionTabs.length ? `tabs-${tabStyle}` : "";
+  if (!sectionTabs.length) { tabsEl.replaceChildren(); return; }
+
+  if (tabStyle === "marks") {
+    tabsEl.replaceChildren(choiceRow([null, ...sectionTabs],
+      (b, name) => { b.textContent = name ?? "ALL"; },
+      (name) => name === tab,
+      (name) => { tab = name; layColumns(true); },
+      "tab-row"));
+    return;
+  }
+
+  if (tabStyle === "index") {
+    const rows = [choiceRow(sectionTabs,
+      (b, name) => {
+        b.textContent = name;
+        const sup = document.createElement("sup");
+        sup.textContent = countIn(name);
+        b.appendChild(sup);
+      },
+      (name) => name === tab,
+      (name) => { tab = name; layColumns(true); },
+      "tab-years")];
+    const kinds = section.kinds ?? [];
+    if (kinds.length > 1) {
+      rows.push(choiceRow([null, ...kinds.map((k) => k.name)],
+        (b, name) => { b.textContent = name === null ? "all" : kinds.find((k) => k.name === name).label; },
+        (name) => name === kind,
+        (name) => { kind = name; layColumns(true); },
+        "tab-kinds"));
+    }
+    tabsEl.replaceChildren(...rows);
+    return;
+  }
+
+  // shelves: the row is a set of jump links, nothing is filtered
+  const row = document.createElement("div");
+  row.className = "tab-jumps";
+  for (const name of sectionTabs) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = name;
+    b.addEventListener("click", (e) => {
+      if (e.detail > 0) b.blur();
+      document.getElementById(shelfId(name))?.scrollIntoView({ behavior: REDUCED_MOTION ? "auto" : "smooth", block: "start" });
+    });
+    row.appendChild(b);
+  }
+  tabsEl.replaceChildren(row);
 }
 
 
@@ -245,11 +344,115 @@ function buildBlock(block, index) {
   if (block.list) list("ul", block.list);          // one bullet per line
   if (block.inline) list("ul", [block.inline.join(", ")]);   // one bullet, items separated by commas
   if (block.numbered) list("ol", block.numbered);
+  if (block.links) el.appendChild(buildMarginList()); // lists draft "thoughts"
+  if (block.image) {                               // a picture, the full width of the text
+    const img = document.createElement("img");
+    img.className = "prose-image";
+    img.src = block.image;
+    img.alt = block.alt ?? "";
+    img.loading = "lazy";
+    el.appendChild(img);
+  }
 
   animate(el, [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }],
     { duration: 500, delay: 200 + index * 90, easing: "ease-out", fill: "backwards" });
 
   return el;
+}
+
+
+// ---------- Lists (js/lists.js) ----------
+// Two of the three list drafts render inside the site; the third is its own
+// page, lists/index.html. Which one shows is LISTS_DRAFT in js/lists.js.
+
+// A link that opens in a new tab, its text set safely
+function outLink(link, className) {
+  const a = document.createElement("a");
+  a.href = link.url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.className = className;
+  a.textContent = link.title;
+  return a;
+}
+
+// Draft "thoughts": a few picks in the thoughts panel, right under the text.
+// Only links marked `margin: true` in js/lists.js; the full list is on its
+// own page (lists/index.html), which the lead-in links to.
+// One row per link:   Mar 2026   Title (a link)
+//                                Channel · 12 min
+function buildMarginList() {
+  const links = newestFirst().filter((link) => link.margin);
+  const wrap = document.createElement("div");
+  wrap.className = "margin-list";
+
+  const lead = document.createElement("p");
+  const page = document.createElement("a");
+  page.href = "lists/";
+  page.textContent = "Things I keep coming back to";
+  lead.appendChild(page);
+  wrap.appendChild(lead);
+
+  const rows = document.createElement("ol");
+  rows.className = "margin-list-rows";
+  for (const link of links) {
+    const row = document.createElement("li");
+    const date = document.createElement("span");
+    date.className = "margin-list-date";
+    date.textContent = formatMonth(link.published);
+    const meta = document.createElement("span");
+    meta.className = "margin-list-meta";
+    meta.textContent = [link.by, formatMinutes(link.seconds)].filter(Boolean).join(" · ");
+    row.append(date, outLink(link, "margin-list-link"), meta);
+    rows.appendChild(row);
+  }
+  wrap.appendChild(rows);
+  return wrap;
+}
+
+// Draft "sphere": its own section, one row per link with its thumbnail
+function buildReel() {
+  const list = document.createElement("ol");
+  list.className = "reel";
+  newestFirst().forEach((link, index) => {
+    const row = document.createElement("li");
+    const a = outLink(link, "reel-item");
+    a.textContent = "";                            // rebuilt below with picture + text
+
+    const thumb = document.createElement("span");
+    thumb.className = "reel-thumb";
+    const src = previewImage(link);
+    if (src) {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = "";                                // the title beside it names it
+      img.loading = "lazy";
+      thumb.appendChild(img);
+    }
+    if (link.seconds) {
+      const length = document.createElement("span");
+      length.className = "reel-length";
+      length.textContent = formatLength(link.seconds);
+      thumb.appendChild(length);
+    }
+
+    const text = document.createElement("span");
+    text.className = "reel-text";
+    const title = document.createElement("span");
+    title.className = "reel-title";
+    title.textContent = link.title;
+    const meta = document.createElement("span");
+    meta.className = "reel-meta";
+    meta.textContent = `${link.by} · ${formatDate(link.published)}`;
+    text.append(title, meta);
+
+    a.append(thumb, text);
+    row.appendChild(a);
+    list.appendChild(row);
+    animate(row, [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }],
+      { duration: 500, delay: 200 + index * 50, easing: "ease-out", fill: "backwards" });
+  });
+  return list;
 }
 
 
@@ -280,10 +483,17 @@ function buildCard(raw, index) {
   label.textContent = item.title;                  // textContent, never innerHTML (safe from XSS)
   card.appendChild(label);
   card.dataset.tab = item.tab ?? "";
-  if (item.tab) {                                  // its tab in brackets, like Tiffany's tags
+  // Its kind: the section's first kind unless the card names another (anime: "film")
+  const kinds = state.current?.kinds ?? [];
+  card.dataset.kind = item.kind ?? kinds[0]?.name ?? "";
+
+  // Its tab in brackets under the title, like Tiffany's tags, unless the
+  // section turns tab tags off (anime does). Kinds ("film") are never printed.
+  const tagText = state.current?.tabTags === false ? null : item.tab;
+  if (tagText) {
     const tag = document.createElement("small");
     tag.className = "card-tag";
-    tag.textContent = `( ${item.tab} )`;
+    tag.textContent = `( ${tagText} )`;
     card.appendChild(tag);
   }
 
