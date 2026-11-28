@@ -6,7 +6,8 @@
 //   name    menu label and panel title
 //   radius  sphere size. Keep them nested: each smaller than the one before.
 //   color   any CSS color
-//   blurb   one line under the title
+//   blurb   one line under the title, or { lines, label, list }:
+//           several lines, then a lead-in and a short bulleted list
 //   items   the cards. Each is either plain text, or
 //           { title, image, note } for a poster that opens a popup.
 //           image paths are relative to index.html, e.g. "images/x.jpg"
@@ -18,6 +19,8 @@
 //             diagram: "sap1"  boxes over the video and the clock stepper
 //                              under it (js/sap1.js)
 //           In a note, "\n\n" starts a new paragraph.
+//   columns how many columns the cards stack in (3 on small screens)
+//   tabs    optional filters above the cards; each item picks one with `tab`
 //   layout  optional. "photos" shows items as { image, caption } photos
 //           in a wall, each opening full size on click.
 
@@ -51,12 +54,15 @@ export const SECTIONS = [
   },
   {
     name: "projects",
+    columns: 6,
     radius: 2.2,
     color: "#a78bfa",
     blurb: "beepboop",
+    tabs: ["1D", "2D", "3D", "4D"],                 // each project names one with `tab`
     items: [
       {
         title: "SAP-1",
+        tab: "3D",
         image: "projects/computer/cover.jpg",                // card cover
         video: "projects/computer/conditional-jump-4k.mp4", // replaces the poster in the detail view
         poster: "projects/computer/video-poster-4k.jpg", // still frame shown before the video loads
@@ -340,13 +346,19 @@ export const SECTIONS = [
           { src: "projects/computer/control-signals.jpg",      caption: "Control signals" },
         ],
       },
+      {
+        title: "ranking classes",
+        tab: "1D",
+        subtitle: "listing classes based on how interesting they were + notes",
+      },
     ],
   },
   {
     name: "books",
+    columns: 6,
     radius: 1.5,
     color: "#f472b6",
-    blurb: "brrr",
+    blurb: "i don't know what i'm reading",
     items: [
       { title: "Educated",                image: "images/educated.jpg" },
       { title: "Feynman's Rainbow",       image: "images/feynmans-rainbow.jpg" },
@@ -358,9 +370,18 @@ export const SECTIONS = [
   },
   {
     name: "photos",
+    columns: 4,
     radius: 1.0,
     color: "#fbbf24",
-    blurb: "aesthetic",
+    // lines: one per line; then a lead-in (label) and a short list
+    // blurb: {
+    //   lines: [
+    //     "i don't know how to respond when people ask how are you.",
+    //     "because i feel so many emotions at once.",
+    //   ],
+    //   label: "here's what i know is likely true",
+    //   list: ["i love food", "i love playing basketball", "i love traveling"],
+    // },
     // layout "photos": a wall of photos at their own shapes, no titles on top.
     // Clicking one enlarges it with its caption.
     layout: "photos",
@@ -383,6 +404,7 @@ export const SECTIONS = [
   },
   {
     name: "anime",
+    columns: 6,
     radius: 0.6,
     color: "#34d399",
     blurb: "Shows I love.",

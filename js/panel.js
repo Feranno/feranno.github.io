@@ -15,6 +15,7 @@ const main = document.querySelector("main");
 const titleEl = document.querySelector("#section-title");
 const blurbEl = document.querySelector("#section-blurb");
 const cardsEl = document.querySelector("#cards");
+const tabsEl = document.querySelector("#tabs");
 const proseEl = document.querySelector("#prose");
 const popup = document.querySelector("#popup");
 const popupImg = document.querySelector("#popup-img");
@@ -44,13 +45,16 @@ export function openSection(section) {
   state.current = section;
   main.hidden = false;
   titleEl.textContent = section.name;
-  blurbEl.textContent = section.blurb;
+  showBlurb(section.blurb);
   setAccent();
 
   const photos = section.layout === "photos";
   expanded = null;                                 // any enlarged photo goes with the old cards
   cardsEl.classList.toggle("photos", photos);
-  cardsEl.replaceChildren(...section.items.map(photos ? buildPhoto : buildCard));
+  tiles = section.items.map(photos ? buildPhoto : buildCard);
+  wantedColumns = section.columns ?? (photos ? 4 : 6);
+  showTabs(section);
+  layColumns(true);
   proseEl.hidden = !section.body?.length;
   proseEl.replaceChildren(...(section.body ?? []).map(buildBlock));
 
@@ -86,6 +90,111 @@ export function sectionFromMenu(element) {
   return button ? sectionFor.get(button) : null;
 }
 
+
+// ---------- Columns ----------
+// Cards and photos are dealt into columns left to right (1st in column 1,
+// 2nd in column 2, ...), and each column stacks its own at their natural
+// heights, like anandmaj.com/books. Narrow screens use 3 columns.
+
+let tiles = [];                                    // the open section's cards or photos, in order
+let wantedColumns = 6, shownColumns = 0;
+const narrow = matchMedia("(max-width: 800px)");
+
+function layColumns(force) {
+  const n = narrow.matches ? Math.min(3, wantedColumns) : wantedColumns;
+  if (n === shownColumns && !force) return;
+  shownColumns = n;
+  const shown = tiles.filter((tile) => !tab || tile.dataset.tab === tab);
+
+  // One band of columns; tile k goes to column k % n
+  const band = (list, offset) => {
+    const row = document.createElement("div");
+    row.className = "columns";
+    const columns = Array.from({ length: n }, () => {
+      const column = document.createElement("div");
+      column.className = "column";
+      return column;
+    });
+    list.forEach((tile, k) => columns[(offset + k) % n].appendChild(tile));
+    row.append(...columns);
+    return row;
+  };
+
+  // An enlarged photo opens in a full-width row after its own row, as on
+  // anandmaj.com/artwork: the columns stop there and carry on below it.
+  const at = expanded ? shown.indexOf(expanded.photo) : -1;
+  if (at < 0) {
+    cardsEl.replaceChildren(band(shown, 0));
+    return;
+  }
+  const cut = (Math.floor(at / n) + 1) * n;
+  const parts = [band(shown.slice(0, cut), 0), expanded.block];
+  if (cut < shown.length) parts.push(band(shown.slice(cut), cut));
+  cardsEl.replaceChildren(...parts);
+}
+narrow.addEventListener("change", () => layColumns());
+
+
+// ---------- Tabs ----------
+// A section with `tabs` (projects: 1D 2D 3D 4D) gets a row of radio marks
+// above the cards, like huang-tiffany.github.io's work page: ○ ALL ○ 1D ...
+// Each card names its tab with `tab`, shown in brackets under its title.
+
+let tab = null;                                    // the chosen tab, or null for all
+
+function showTabs(section) {
+  tab = null;
+  const tabs = section.tabs ?? [];
+  tabsEl.hidden = !tabs.length;
+  if (!tabs.length) { tabsEl.replaceChildren(); return; }
+
+  const choices = [null, ...tabs];                 // ALL first
+  const buttons = choices.map((name) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = name ?? "ALL";
+    b.addEventListener("click", (e) => {
+      if (e.detail > 0) b.blur();                  // keep the spacebar for the music
+      tab = name;
+      mark();
+      layColumns(true);
+    });
+    return b;
+  });
+  const mark = () => buttons.forEach((b, k) => b.setAttribute("aria-pressed", String(choices[k] === tab)));
+  mark();
+  tabsEl.replaceChildren(...buttons);
+}
+
+
+// ---------- A section's blurb ----------
+
+// A string is one line. { lines, label, list } is several lines, then a
+// lead-in line and a short bulleted list (see photos in content.js).
+function showBlurb(blurb = "") {
+  blurbEl.replaceChildren();
+  if (typeof blurb === "string") { blurbEl.textContent = blurb; return; }
+  for (const line of blurb.lines ?? []) {
+    const p = document.createElement("p");
+    p.textContent = line;                          // textContent, never innerHTML
+    blurbEl.appendChild(p);
+  }
+  if (blurb.label) {
+    const p = document.createElement("p");
+    p.className = "blurb-label";
+    p.textContent = blurb.label;
+    blurbEl.appendChild(p);
+  }
+  if (blurb.list) {
+    const ul = document.createElement("ul");
+    for (const text of blurb.list) {
+      const li = document.createElement("li");
+      li.textContent = text;
+      ul.appendChild(li);
+    }
+    blurbEl.appendChild(ul);
+  }
+}
 
 // ---------- Written text (a section's `body`) ----------
 
@@ -144,19 +253,30 @@ function buildCard(raw, index) {
   card.type = "button";
   card.className = "card";
 
+  // the poster at its own shape (or a plain colored one), the title under it
+  const frame = document.createElement("div");
+  frame.className = item.image ? "card-frame" : "card-frame blank";
   if (item.image) {
     const img = document.createElement("img");
     img.src = item.image;
     img.alt = "";                                  // decorative: the title text right below names it
     img.loading = "lazy";                          // download only when it's about to be visible
-    card.appendChild(img);
+    frame.appendChild(img);
   }
+  card.appendChild(frame);
 
   const label = document.createElement("span");
   label.textContent = item.title;                  // textContent, never innerHTML (safe from XSS)
   card.appendChild(label);
+  card.dataset.tab = item.tab ?? "";
+  if (item.tab) {                                  // its tab in brackets, like Tiffany's tags
+    const tag = document.createElement("small");
+    tag.className = "card-tag";
+    tag.textContent = `( ${item.tab} )`;
+    card.appendChild(tag);
+  }
 
-  card.addEventListener("click", () => openPopup(item, card));   // the poster grows out of this card
+  card.addEventListener("click", () => openPopup(item, frame));   // the poster grows out of this card
 
   animate(card, [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }],
     { duration: 500, delay: 200 + index * 50, easing: "ease-out", fill: "backwards" });
@@ -166,8 +286,8 @@ function buildCard(raw, index) {
 
 
 // One photo in a "photos" section: shown at its own shape with its caption.
-// Hovering zooms it a little (CSS). Clicking or tapping opens it large, in a
-// full-width row right below its own row (see expandPhoto).
+// Hovering zooms it a little (CSS). Clicking or tapping opens it large in a
+// full-width row after its own row (see expandPhoto).
 function buildPhoto(item, index) {
   const button = document.createElement("button");
   button.type = "button";
@@ -197,17 +317,18 @@ function photoParts(item) {
 
 
 // ---------- Enlarged photo ----------
-// The clicked photo's spot stays empty (so nothing jumps), and a large copy
-// opens across the whole grid after the last photo in that row. It grows out
-// of the small one. Clicking the large one closes it; clicking another photo
-// moves it there.
+// As on anandmaj.com/artwork: the clicked photo's spot stays empty (so nothing
+// jumps), and a large copy opens in a full-width row after its row, pushing
+// the photos below down. It grows out of the small one. Clicking the large
+// one closes it; clicking another photo moves it there.
 
 let expanded = null;                               // { photo, item, block } or null
 
 function expandPhoto(photo, item) {
   const wasOpen = expanded?.photo === photo;
-  collapsePhoto();
-  if (wasOpen) return;
+  if (expanded) unmark(expanded.photo);
+  expanded = null;
+  if (wasOpen) { layColumns(true); return; }
 
   const block = document.createElement("button");
   block.type = "button";
@@ -220,7 +341,7 @@ function expandPhoto(photo, item) {
   photo.classList.add("is-open");
   photo.setAttribute("aria-expanded", "true");
   expanded = { photo, item, block };
-  placeExpanded();
+  layColumns(true);
 
   // Grow from where the small photo was (the "FLIP" trick: measure both, then animate the difference)
   const frame = block.querySelector(".photo-frame");
@@ -235,26 +356,17 @@ function expandPhoto(photo, item) {
   block.scrollIntoView({ block: "nearest", behavior: REDUCED_MOTION ? "auto" : "smooth" });
 }
 
-// Put the large copy after the last photo in the clicked photo's row
-function placeExpanded() {
-  if (!expanded) return;
-  const photos = [...cardsEl.querySelectorAll(".photo")];
-  const columns = getComputedStyle(cardsEl).gridTemplateColumns.split(" ").length;
-  const index = photos.indexOf(expanded.photo);
-  const rowEnd = Math.min(Math.floor(index / columns) * columns + columns - 1, photos.length - 1);
-  photos[rowEnd].after(expanded.block);
+function unmark(photo) {
+  photo.classList.remove("is-open");
+  photo.setAttribute("aria-expanded", "false");
 }
 
 function collapsePhoto() {
   if (!expanded) return;
-  expanded.block.remove();
-  expanded.photo.classList.remove("is-open");
-  expanded.photo.setAttribute("aria-expanded", "false");
+  unmark(expanded.photo);
   expanded = null;
+  layColumns(true);
 }
-
-// The column count changes with the window width, so the row end can move
-addEventListener("resize", placeExpanded);
 
 
 // ---------- Detail view (full poster + notes) ----------
