@@ -7,6 +7,7 @@ import { SECTIONS } from "./content.js";
 import { REDUCED_MOTION } from "./config.js";
 import { state } from "./state.js";
 import { sectionColor, onThemeChange } from "./theme.js";
+import { initSap1 } from "./sap1.js";
 
 // Page elements, looked up once
 const nav = document.querySelector("nav");
@@ -20,6 +21,10 @@ const popupImg = document.querySelector("#popup-img");
 const popupTitle = document.querySelector("#popup-title");
 const popupNote = document.querySelector("#popup-note");
 const popupVideo = document.querySelector("#popup-video");
+const popupFrame = document.querySelector("#popup-frame");        // the video, plus boxes drawn over it
+const popupOverlay = document.querySelector("#popup-overlay");
+const popupDiagram = document.querySelector("#popup-diagram");    // the clock stepper under the video
+let closeDiagram = null;
 const popupSubtitle = document.querySelector("#popup-subtitle");
 const popupFacts = document.querySelector("#popup-facts");
 const popupGallery = document.querySelector("#popup-gallery");
@@ -295,6 +300,14 @@ async function openPopup(item, card) {
   // Video takes the poster's place when there is one
   const hasVideo = Boolean(item.video);
   popupVideo.hidden = !hasVideo;
+  popupFrame.hidden = !hasVideo;
+
+  // SAP-1: boxes over the video and the clock stepper under it
+  const hasDiagram = item.diagram === "sap1" && hasVideo;
+  popup.querySelector(".detail").classList.toggle("has-diagram", hasDiagram);
+  popupDiagram.hidden = !hasDiagram;
+  popupOverlay.hidden = !hasDiagram;
+  if (hasDiagram) closeDiagram = initSap1(popupDiagram, popupOverlay, popupVideo);
   popupImg.hidden = hasVideo || !item.image;
   if (hasVideo) {
     popupVideo.poster = item.poster ?? "";
@@ -311,7 +324,7 @@ async function openPopup(item, card) {
 
   closing = false;
   openedFrom = card ?? null;
-  const media = hasVideo ? popupVideo : (item.image ? popupImg : null);
+  const media = hasVideo ? popupFrame : (item.image ? popupImg : null);
 
   // Size the poster before showing it, so it never flashes at the wrong size.
   // The card already loaded this image, so decoding it is nearly instant.
@@ -387,8 +400,8 @@ function popIn(media) {
       { duration: OPEN_MS, easing: EASE_OUT });
   }
 
-  // Text and back button follow once the poster is mostly there
-  for (const el of [popupText, popupBack]) {
+  // Text, back button and stepper follow once the poster is mostly there
+  for (const el of [popupText, popupBack, popupDiagram]) {
     animate(el, [{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }],
       { duration: 500, delay: OPEN_MS * 0.45, easing: "ease-out", fill: "backwards" });
   }
@@ -397,7 +410,7 @@ function popIn(media) {
 // Close with the reverse motion: text fades, poster shrinks back into its card
 function closePopup() {
   if (!popup.open || closing) return;
-  const media = !popupImg.hidden ? popupImg : (!popupVideo.hidden ? popupVideo : null);
+  const media = !popupImg.hidden ? popupImg : (!popupFrame.hidden ? popupFrame : null);
   const rect = cardRect();
   if (REDUCED_MOTION) { popup.close(); return; }
 
@@ -407,6 +420,7 @@ function closePopup() {
     popup.animate([{ backgroundColor: dim() }, { backgroundColor: CLEAR }], { duration: CLOSE_MS, easing: EASE_IN_OUT, fill }),
     popupText.animate([{ opacity: 1 }, { opacity: 0 }], { duration: CLOSE_MS * 0.5, fill }),
     popupBack.animate([{ opacity: 1 }, { opacity: 0 }], { duration: CLOSE_MS * 0.5, fill }),
+    popupDiagram.animate([{ opacity: 1 }, { opacity: 0 }], { duration: CLOSE_MS * 0.5, fill }),
   ];
   if (media && rect && media === popupImg) {
     runs.push(media.animate([{ transform: "none" }, { transform: overCard(media, rect) }],
@@ -421,12 +435,14 @@ function closePopup() {
 // Runs however the dialog closed: put everything back for next time
 function resetPopup() {
   closing = false;
-  for (const el of [popup, popupImg, popupVideo, popupText, popupBack]) {
+  for (const el of [popup, popupImg, popupFrame, popupDiagram, popupText, popupBack]) {
     for (const run of el.getAnimations()) run.cancel();
   }
   if (openedFrom) openedFrom.style.visibility = "";
   openedFrom = null;
   popupVideo.pause();                              // stop playing once hidden
+  closeDiagram?.();
+  closeDiagram = null;
 }
 
 // One gallery thumbnail

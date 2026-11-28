@@ -15,6 +15,8 @@
 //             subtitle         one line under the title
 //             facts            [label, value] pairs
 //             gallery          [{ src, caption }], click to enlarge
+//             diagram: "sap1"  boxes over the video and the clock stepper
+//                              under it (js/sap1.js)
 //           In a note, "\n\n" starts a new paragraph.
 //   layout  optional. "photos" shows items as { image, caption } photos
 //           in a wall, each opening full size on click.
@@ -59,6 +61,7 @@ export const SECTIONS = [
         video: "projects/computer/conditional-jump-4k.mp4", // replaces the poster in the detail view
         poster: "projects/computer/video-poster-4k.jpg", // still frame shown before the video loads
         subtitle: "building a general purpose computer, carefully",
+        diagram: "sap1",
         // One paragraph per array entry; they're joined with a blank line between them.
         note: [
           "I wanted to understand how computers worked. How do computational primitives " +
