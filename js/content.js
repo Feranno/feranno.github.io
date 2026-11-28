@@ -7,7 +7,10 @@
 //   radius  sphere size. Keep them nested: each smaller than the one before.
 //   color   any CSS color
 //   blurb   one line under the title, or { lines, label, list }:
-//           several lines, then a lead-in and a short bulleted list
+//           several lines, then a lead-in and a short bulleted list.
+//           A line can also be a list of strings and { mark } words to
+//           highlight, { text, href } links and "\n" line breaks,
+//           e.g. ["Welcome to ", { mark: "Aincrad" }, "."]
 //   items   the cards. Each is either plain text, or
 //           { title, image, note } for a poster that opens a popup.
 //           image paths are relative to index.html, e.g. "images/x.jpg"
@@ -458,7 +461,8 @@ export const SECTIONS = [
     name: "thoughts",
     radius: 0.3,
     color: "#f87171",
-    blurb: "Welcome to Aincrad.",
+    blurb: ["Welcome to ", { mark: "Aincrad" }, ".", "\n",   // { mark } is highlighted, "\n" a new line
+      "I like ", { text: "collecting things", href: "thoughts/hunters/" }, "."],
     items: [],
     body: [
       { text: [

@@ -174,6 +174,17 @@ function showTabs(section) {
 function showBlurb(blurb = "") {
   blurbEl.replaceChildren();
   if (typeof blurb === "string") { blurbEl.textContent = blurb; return; }
+  if (Array.isArray(blurb)) {                      // strings, { mark } words, { text, href } links, "\n" breaks
+    for (const part of blurb) {
+      if (part === "\n") { blurbEl.appendChild(document.createElement("br")); continue; }
+      if (typeof part === "string") { blurbEl.append(part); continue; }
+      const el = document.createElement(part.href ? "a" : "mark");
+      el.textContent = part.mark ?? part.text;      // textContent, never innerHTML
+      if (part.href) el.href = part.href;
+      blurbEl.appendChild(el);
+    }
+    return;
+  }
   for (const line of blurb.lines ?? []) {
     const p = document.createElement("p");
     p.textContent = line;                          // textContent, never innerHTML

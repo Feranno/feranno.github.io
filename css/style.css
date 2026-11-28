@@ -393,6 +393,21 @@ main h2 {
 
 #section-blurb li::marker { color: var(--bullet); }
 
+/* A link in a blurb: underlined in the section's color, like links in written text */
+#section-blurb a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+/* A highlighted word in a blurb ("Aincrad"): the section's color, glowing */
+#section-blurb mark {
+  background: none;
+  color: var(--accent);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
 .back {
   background: none;
   border: 1px solid var(--line);

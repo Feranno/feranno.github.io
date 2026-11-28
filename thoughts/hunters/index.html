@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<!--
+  Hunters, linked from the thoughts blurb ("I like collecting things.").
+  Every Hunter on the Hunterpedia, as stacked cards like the
+  site's anime section, filtered by what kind of Hunter they are. Click one
+  for what that kind of Hunter hunts and who they are, in the wiki's own
+  words, with a link to their page. "?" opens someone at random.
+  Data: hunters.js (generated from the wiki, CC BY-SA 3.0, by
+  tools/wiki/build_hunters.py).
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hunters</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&family=Spectral:ital@0;1&display=swap">
+  <style>
+    :root {
+      --bg: #0b0d17; --text: #e8e8ef; --muted: #8a8fa3; --line: rgba(255, 255, 255, 0.14);
+      --accent: #a78bfa;
+      --font-body: "Inter", sans-serif; --font-display: "Instrument Serif", serif; --font-prose: "Spectral", Times, serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-body); }
+    main { max-width: 1100px; margin: 0 auto; padding: 80px 24px 120px; }
+
+    h1 { margin: 0 0 8px; font: 400 64px/1 var(--font-display); }
+    .home { display: inline-block; margin-bottom: 28px; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font: 13px var(--font-body); text-decoration: none; }
+    .home:hover { color: var(--text); border-color: var(--text); }
+    .blurb { margin: 0 0 22px; font: 16px/1.5 var(--font-prose); color: var(--muted); }
+
+    /* filters: Tiffany's radio marks, with counts */
+    .tabs { display: flex; flex-wrap: wrap; gap: 10px 20px; margin: 0 0 26px; }
+    .tabs button { display: flex; align-items: center; gap: 7px; padding: 0; border: none; background: none; color: var(--muted); font: 12px/1 var(--font-body); letter-spacing: 0.04em; cursor: pointer; }
+    .tabs button::before { content: ""; width: 10px; height: 10px; border: 1px solid currentColor; border-radius: 50%; }
+    .tabs button[aria-pressed="true"] { color: var(--text); }
+    .tabs button[aria-pressed="true"]::before { background: currentColor; box-shadow: inset 0 0 0 2px var(--bg); }
+    .tabs button:hover { color: var(--text); }
+    .tabs small { opacity: 0.6; }
+    .tabs .random { margin-left: auto; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; }
+    .tabs .random::before { display: none; }
+
+    /* stacked columns, like the anime section */
+    .wall { display: flex; gap: 12px; align-items: flex-start; }
+    .column { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+    .card { display: flex; flex-direction: column; gap: 7px; padding: 0; border: none; background: none; color: var(--text); text-align: center; cursor: pointer; }
+    .frame { overflow: hidden; border-radius: 8px; transition: transform 0.5s; background: linear-gradient(160deg, var(--accent), var(--bg)); }
+    .frame.blank { aspect-ratio: 3 / 4; }
+    .frame img { display: block; width: 100%; height: auto; transition: filter 0.5s; }
+    .card span { font: 13px/1.3 var(--font-prose); }
+    .card small { font: 10px/1 var(--font-body); letter-spacing: 0.06em; color: var(--muted); }
+    @media (hover: hover) {
+      .card:hover { position: relative; z-index: 5; }
+      .card:hover .frame { transform: scale(1.15); }
+      .card:hover img { filter: brightness(1.12); }
+    }
+
+    /* the detail view */
+    dialog { width: min(980px, 94vw); max-height: 90vh; padding: 0; border: 1px solid var(--line); border-radius: 14px; background: #10121e; color: var(--text); }
+    dialog::backdrop { background: rgba(5, 6, 12, 0.7); backdrop-filter: blur(8px); }
+    .detail { display: grid; grid-template-columns: minmax(0, 300px) 1fr; gap: 32px; padding: 32px; }
+    .detail img { width: 100%; border-radius: 10px; display: block; }
+    .detail h2 { margin: 0 0 6px; font: 400 44px/1 var(--font-display); }
+    .kind { font: 11px var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    .label { margin: 22px 0 6px; font: 10px var(--font-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    .detail p { margin: 0 0 10px; font: 16px/1.6 var(--font-prose); }
+    .detail ul { margin: 0; padding-left: 18px; font: 14px/1.6 var(--font-prose); color: var(--muted); }
+    .src { display: inline-block; margin-top: 20px; color: var(--text); font: 13px var(--font-body); }
+    .close { position: absolute; top: 14px; right: 16px; border: none; background: none; color: var(--muted); font: 22px var(--font-body); cursor: pointer; }
+    .credit { margin-top: 40px; font: 11px var(--font-body); color: var(--muted); }
+    .credit a { color: inherit; }
+    @media (max-width: 760px) { .detail { grid-template-columns: 1fr; } h1 { font-size: 48px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="home" href="../../">← back</a>
+    <h1>hunters</h1>
+    <p class="blurb" id="count"></p>
+    <div class="tabs" id="tabs" role="group" aria-label="Kind of Hunter"></div>
+    <div class="wall" id="wall"></div>
+    <p class="credit">Every word on this page is from the <a href="https://hunterxhunter.fandom.com/wiki/Hunter_Association#Types_of_Hunters" target="_blank" rel="noopener">Hunterpedia</a>
+      (CC BY-SA 3.0), and so are the pictures.</p>
+  </main>
+
+  <dialog id="detail"></dialog>
+
+  <script type="module">
+    import { TYPES, HUNTERS } from "./hunters.js";
+
+    const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    const wiki = (page, anchor) => `https://hunterxhunter.fandom.com/wiki/${encodeURIComponent(page)}${anchor ? "#" + anchor : ""}`;
+
+    // what they hunt, A to Z; then the kinds that say nothing about what they hunt
+    const GENERAL = ["Rookie", "Temp Hunter", "Amateur Hunter", "Provisional Hunter", "Unclassified Hunter"];
+    const rank = (k) => GENERAL.indexOf(k);
+    const counts = {};
+    for (const h of HUNTERS) counts[h.kind] = (counts[h.kind] ?? 0) + 1;
+    const kinds = Object.keys(counts).sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+    HUNTERS.sort((a, b) => kinds.indexOf(a.kind) - kinds.indexOf(b.kind) || a.name.localeCompare(b.name));
+    let kind = null;
+
+    document.getElementById("count").textContent =
+      `${HUNTERS.length} Hunters, ${kinds.length - GENERAL.length} kinds of hunting.`;
+
+    const tabs = document.getElementById("tabs");
+    const choices = [null, ...kinds];
+    tabs.innerHTML = choices.map((k) =>
+      `<button type="button" data-kind="${k ?? ""}">${k ? esc(k.replace(/ Hunter$/, "")) : "ALL"} <small>${k ? counts[k] : HUNTERS.length}</small></button>`).join("")
+      + `<button type="button" class="random" id="random">? someone at random</button>`;
+    tabs.addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (e.detail > 0) b.blur();
+      if (b.id === "random") return open(HUNTERS[Math.floor(Math.random() * HUNTERS.length)]);
+      kind = b.dataset.kind || null;
+      render();
+    });
+
+    // cards, dealt into columns left to right
+    const wall = document.getElementById("wall");
+    const narrow = matchMedia("(max-width: 800px)");
+    function render() {
+      tabs.querySelectorAll("[data-kind]").forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.kind || null) === kind)));
+      const shown = HUNTERS.filter((h) => !kind || h.kind === kind);
+      const n = narrow.matches ? 3 : 6;
+      const columns = Array.from({ length: n }, () => Object.assign(document.createElement("div"), { className: "column" }));
+      shown.forEach((h, i) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "card";
+        card.innerHTML = `<div class="frame ${h.image ? "" : "blank"}">${h.image ? `<img src="${h.image}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}</div>
+          <span>${esc(h.name)}</span><small>${esc(h.kind.replace(/ Hunter$/, ""))}</small>`;
+        card.addEventListener("click", () => open(h));
+        columns[i % n].appendChild(card);
+      });
+      wall.replaceChildren(...columns);
+    }
+    narrow.addEventListener("change", render);
+
+    // the detail: what their kind of Hunter hunts, then who they are
+    const dialog = document.getElementById("detail");
+    function open(h) {
+      const hunts = TYPES[h.kind] ?? [];
+      const anchor = h.kind === "Rookie" ? "Rookies" : h.kind.replace(/\//g, ".2F").replace(/ /g, "_") + "s";
+      dialog.innerHTML = `
+        <button class="close" aria-label="Close">×</button>
+        <div class="detail">
+          <div>${h.image ? `<img src="${h.image}" alt="" referrerpolicy="no-referrer">` : ""}</div>
+          <div>
+            <div class="kind">${esc(h.kind)}${h.stars ? " · " + "★".repeat(h.stars) : ""}${h.zodiac ? " · Zodiac" : ""}</div>
+            <h2>${esc(h.name)}</h2>
+            ${hunts.length ? `<div class="label">what they hunt</div>${hunts.map((p) => `<p>${esc(p)}</p>`).join("")}` : ""}
+            <div class="label">who they are</div>
+            ${h.lead.map((p) => `<p>${esc(p)}</p>`).join("")}
+            ${h.occupation.length ? `<div class="label">occupation</div><ul>${h.occupation.map((o) => `<li>${esc(o)}</li>`).join("")}</ul>` : ""}
+            <a class="src" href="${wiki(h.page)}" target="_blank" rel="noopener">${esc(h.name)} on the Hunterpedia ↗</a>
+            ${hunts.length ? `<br><a class="src" style="margin-top:8px" href="${wiki("Hunter_Association", anchor)}" target="_blank" rel="noopener">${esc(h.kind)}s on the Hunterpedia ↗</a>` : ""}
+          </div>
+        </div>`;
+      dialog.querySelector(".close").addEventListener("click", () => dialog.close());
+      dialog.showModal();
+      dialog.scrollTop = 0;
+    }
+    dialog.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
+
+    render();
+  </script>
+</body>
+</html>
