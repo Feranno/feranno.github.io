@@ -20,26 +20,26 @@ export const TYPES = {
   "A Card Hunter is a non-canon type of Hunter who searches for rare cards around the world."
  ],
  "Crime Hunter": [
-  "A Crime Hunter is a type of Hunter who tries to solve mysterious cases in the crime world.[inference 🖱]"
+  "A Crime Hunter is a type of Hunter who tries to solve mysterious cases in the crime world."
  ],
  "Cute Hunter": [
-  "A Cute Hunter is a type of Hunter whose main goal is to maintain the beauty of people and make them look younger despite their age.[inference 🖱]"
+  "A Cute Hunter is a type of Hunter whose main goal is to maintain the beauty of people and make them look younger despite their age."
  ],
  "Disease/Virus Hunter": [
-  "A Disease Hunter and Virus Hunter are types of Hunters who tries to find new elements to cure immedicable diseases.[inference 🖱]"
+  "A Disease Hunter and Virus Hunter are types of Hunters who tries to find new elements to cure immedicable diseases."
  ],
  "Gourmet Hunter": [
   "A Gourmet Hunter is a type of Hunter whose goals are: to travel the world in search of rare cuisine/exotic foodstuffs and to find and collect rare ingredients customarily obtainable only in remote, inhospitable places. Hunters of this type are great connoisseurs of culinary culture, including related techniques, and usually have well-developed and/or demanding palates in conjunction with a voracious appetite, especially for new dining experiences. …",
   "Secondarily, they are frequently called on to chase and capture poachers."
  ],
  "Hacker Hunter": [
-  "A Hacker Hunter is a type of Hunter who have vast knowledge of computers and specialize in working with the Internet[inference 🖱] and dealing with cyber crimes."
+  "A Hacker Hunter is a type of Hunter who have vast knowledge of computers and specialize in working with the Internet and dealing with cyber crimes."
  ],
  "Head Hunter": [
-  "A Head Hunter is a type of Hunter who specialize in discovering and cultivating new talents.[inference 🖱]"
+  "A Head Hunter is a type of Hunter who specialize in discovering and cultivating new talents."
  ],
  "Jackpot Hunter": [
-  "A Jackpot Hunter is a type of Hunter who has only one goal: earning money, so they find rich people and make deals/contracts with them.[inference 🖱]"
+  "A Jackpot Hunter is a type of Hunter who has only one goal: earning money, so they find rich people and make deals/contracts with them."
  ],
  "Lost Hunter": [
   "A Lost Hunter is a type of Hunter who specializes in seeking those from whom contact has been lost."
@@ -51,10 +51,10 @@ export const TYPES = {
   "A Paleograph Hunter is a type of Hunter who specializes in learning and translating ancient and lost languages."
  ],
  "Poacher Hunter": [
-  "A Poacher Hunter is a type of Hunter dedicated to the study of animals and protecting them from poachers.[inference 🖱]"
+  "A Poacher Hunter is a type of Hunter dedicated to the study of animals and protecting them from poachers."
  ],
  "Poison Hunter": [
-  "A Poison Hunter is a type of Hunter specialized in various poisons and their pharmaceutical usage. They can use their ability to prepare medical guidelines and analyze poisoning case.[inference 🖱]"
+  "A Poison Hunter is a type of Hunter specialized in various poisons and their pharmaceutical usage. They can use their ability to prepare medical guidelines and analyze poisoning case."
  ],
  "Problem Hunter": [
   "Problem Hunter: Specifics Unknown."
@@ -63,16 +63,16 @@ export const TYPES = {
   "A Ruins Hunter is a type of Hunter dedicated to uncovering, restoring, and preserving ruins in order to \"revive\" ancient societies."
  ],
  "Sea Hunter": [
-  "A Sea Hunter is a type of Hunter who operates in seas looking either for animals or treasures.[inference 🖱]"
+  "A Sea Hunter is a type of Hunter who operates in seas looking either for animals or treasures."
  ],
  "Temp Hunter": [
   "A Temp Hunter is a type of Hunter with governmental jobs subcontracted to them from the Hunter Association. Depending on the difficulty of the job and risks involved, they are guaranteed a standard fee for a job taken. Some Hunters choose to make this their career and are consequently ridiculed by other professional Hunters for doing so. There are approximately 200 Temp Hunters."
  ],
  "Terrorist Hunter": [
-  "A Terrorist Hunter is a type of Hunter specialized in tracking down terrorists and preventing terrorist attacks.[inference 🖱]"
+  "A Terrorist Hunter is a type of Hunter specialized in tracking down terrorists and preventing terrorist attacks."
  ],
  "Treasure Hunter": [
-  "A Treasure Hunter is a type of Hunter who scour the world in search of rare and valuable items.[inference 🖱] A Stone Hunter could possibly be considered a subtype whose quest is for precious stones and gems or related specific jewelry."
+  "A Treasure Hunter is a type of Hunter who scour the world in search of rare and valuable items. A Stone Hunter could possibly be considered a subtype whose quest is for precious stones and gems or related specific jewelry."
  ],
  "Provisional Hunter": [
   "Provisional Hunters are the Kakin guards who passed Kurapika's screening during the 289th Hunter Exam. About 150 people were recruited as temporary support personnel, so the Hunter Association could gain more allies in preparation for the expedition to the Dark Continent. The second Hunter Bylaw was modified so they could be admitted even if they could not use Nen. Their licenses will expire after the voyage."
@@ -193,7 +193,7 @@ export const HUNTERS = [
   "occupation": [
    "Unidentified Beast Hunter"
   ],
-  "nen": "Manipulation (🖱️)",
+  "nen": "Manipulation",
   "lead": [
    "Shoot McMahon is an Unidentified Beast Hunter, Knuckle Bine's partner, and a disciple of Morel Mackernasey."
   ]

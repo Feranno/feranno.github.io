@@ -53,6 +53,9 @@ class Text(HTMLParser):
 
 def clean(t):
     t = re.sub(r"\s+", " ", t).strip()
+    # the wiki editors' own markers, e.g. [inference 🖱], [citation needed]
+    t = re.sub(r"\s*\[(?:[^\]]*🖱|citation needed|clarification needed|when\?|who\?)\]", "", t)
+    t = re.sub(r"\s*\(\s*🖱\ufe0f?\s*\)|🖱\ufe0f?", "", t)          # the bare tooltip icon
     # brackets holding Japanese script (readings, romanizations) are left out
     for _ in range(3):                             # empty ruby brackets first, then readings
         t = re.sub(r"\(\s*\)", "", t)
