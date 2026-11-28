@@ -779,6 +779,28 @@ video.detail-media {
   border-color: var(--text);
 }
 
+/* clock speed: a number you drag sideways, left slower, right faster */
+.sap-speed {
+  min-width: 44px;
+  padding: 2px 0;
+  border-bottom: 1px dotted var(--muted);
+  color: var(--text);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  cursor: ew-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.sap-speed:hover,
+.sap-speed.dragging,
+.sap-speed:focus-visible {
+  border-bottom-style: solid;
+  border-color: var(--text);
+  outline: none;
+}
+
 /* the two jumps, as radio marks: ○ open, ● chosen */
 .sap-scenes {
   display: flex;

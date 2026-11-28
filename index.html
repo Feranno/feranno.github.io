@@ -40,7 +40,7 @@
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&family=Spectral:ital,wght@0,400;1,400&display=swap">
 
-  <link rel="stylesheet" href="css/style.css?v=2026-11-27w">
+  <link rel="stylesheet" href="css/style.css?v=2026-11-28d">
 
   <!-- Apply the saved theme before anything is drawn, so a visitor who chose
        light mode never sees a flash of the dark one. js/theme.js does the rest. -->
@@ -61,22 +61,22 @@
   <script type="importmap">
     { "imports": {
       "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-      "./js/main.js": "./js/main.js?v=2026-11-27w",
-      "./js/panel.js": "./js/panel.js?v=2026-11-27w",
-      "./js/scene.js": "./js/scene.js?v=2026-11-27w",
-      "./js/input.js": "./js/input.js?v=2026-11-27w",
-      "./js/audio.js": "./js/audio.js?v=2026-11-27w",
-      "./js/chopin.js": "./js/chopin.js?v=2026-11-27w",
-      "./js/config.js": "./js/config.js?v=2026-11-27w",
-      "./js/content.js": "./js/content.js?v=2026-11-27w",
-      "./js/state.js": "./js/state.js?v=2026-11-27w",
-      "./js/theme.js": "./js/theme.js?v=2026-11-27w",
-      "./js/sap1.js": "./js/sap1.js?v=2026-11-27w",
-      "./js/sap1-timeline.js": "./js/sap1-timeline.js?v=2026-11-27w"
+      "./js/main.js": "./js/main.js?v=2026-11-28d",
+      "./js/panel.js": "./js/panel.js?v=2026-11-28d",
+      "./js/scene.js": "./js/scene.js?v=2026-11-28d",
+      "./js/input.js": "./js/input.js?v=2026-11-28d",
+      "./js/audio.js": "./js/audio.js?v=2026-11-28d",
+      "./js/chopin.js": "./js/chopin.js?v=2026-11-28d",
+      "./js/config.js": "./js/config.js?v=2026-11-28d",
+      "./js/content.js": "./js/content.js?v=2026-11-28d",
+      "./js/state.js": "./js/state.js?v=2026-11-28d",
+      "./js/theme.js": "./js/theme.js?v=2026-11-28d",
+      "./js/sap1.js": "./js/sap1.js?v=2026-11-28d",
+      "./js/sap1-timeline.js": "./js/sap1-timeline.js?v=2026-11-28d"
     } }
   </script>
   <!-- Modules wait for the page to finish loading, so this is safe in <head> -->
-  <script type="module" src="js/main.js?v=2026-11-27w"></script>
+  <script type="module" src="js/main.js?v=2026-11-28d"></script>
   <!-- Opened straight from disk (file://), browsers refuse to run the modules
        above. If they didn't start, load js/bundle.js instead: the same code in
        one plain script. Rebuild it after editing js/: sh tools/build-file-bundle.sh -->
@@ -84,7 +84,7 @@
     if (location.protocol === "file:") addEventListener("load", () => {
       if (document.documentElement.dataset.started) return;   // this browser ran the modules after all
       const fallback = document.createElement("script");
-      fallback.src = "js/bundle.js?v=2026-11-27w";
+      fallback.src = "js/bundle.js?v=2026-11-28d";
       document.head.appendChild(fallback);
     });
   </script>

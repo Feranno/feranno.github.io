@@ -245,7 +245,7 @@ function paintOverlay(svg, s, rough) {
 // ================================================================
 // The stepper diagram
 // ================================================================
-const VB = { w: 600, h: 590 };
+const VB = { w: 600, h: 636 };
 const BUS = { x: 282, y: 40, w: 36, h: 470 };
 const LX = 14, RX = 336, W = 250;
 const BOX = {
@@ -260,6 +260,7 @@ const BOX = {
   b:       { x: RX, y: 268, w: W, h: 62, label: "B", bits: 8 },
   out:     { x: RX, y: 344, w: W, h: 62, label: "OUT", bits: 8 },
   display: { x: RX, y: 420, w: W, h: 90, label: "Display" },
+  word:    { x: RX, y: 524, w: W, h: 104, label: "Control word" },
 };
 
 // Seven-segment digits: which of a b c d e f g are lit
@@ -317,11 +318,11 @@ function drawStepper(svg, s, rough) {
   let seed = 20;
   for (const id in BOX) {
     const b = BOX[id];
-    const on = busy(id) || (id === "eeprom" && s.sig.length);
+    const on = busy(id) || ((id === "eeprom" || id === "word") && s.sig.length);
     p.rect(b.x, b.y, b.w, b.h, {
       roughness: 1.3, bowing: 1.2,
       stroke: on ? ink : quiet, strokeWidth: id === writer ? 2.2 : on ? 1.6 : 1,
-      strokeLineDash: on && id !== writer && id !== "eeprom" ? [6, 5] : undefined,
+      strokeLineDash: on && id !== writer && id !== "eeprom" && id !== "word" ? [6, 5] : undefined,
     }, seed++);
     text(svg, b.x + 12, b.y + 20, b.label.toUpperCase(), on ? "sap-label on" : "sap-label");
   }
@@ -351,6 +352,16 @@ function drawStepper(svg, s, rough) {
 
   // display: the one thing in color, as on the board
   drawDisplay(svg, BOX.display.x + 20, BOX.display.y + 28, BOX.display.w - 40, 52, s.out);
+
+  // control word: one bulb per signal, lit while it is on, as on the board
+  const cw = BOX.word, gap = (cw.w - 24) / 8;
+  SIGNALS.forEach(([id], k) => {
+    const on = s.sig.includes(id);
+    const cx = cw.x + 12 + gap * (k % 8 + 0.5), cy = cw.y + 40 + Math.floor(k / 8) * 36;
+    p.circle(cx, cy, 12, { roughness: 0.7, stroke: on ? ink : quiet, strokeWidth: 1,
+      fill: on ? ink : undefined, fillStyle: "solid" }, 700 + k);
+    text(svg, cx, cy + 19, SHOWN(id), on ? "sap-small on" : "sap-small", "middle");
+  });
 
   // RAM: the program from the paper. → the line being run; ● the slot being read
   const rows = [...PROGRAM.map(([addr, , , txt]) => [addr, txt]), [15, "1"]];
@@ -453,7 +464,17 @@ function timeOf(i, outs) {
 // `video` is the video they follow.
 export function initSap1(host, overlaySvg, video) {
   const { steps, outs } = sim();
-  let i = -1, held = null, rough = window.rough || null, raf = 0, lastDraw = 0;
+  let i = -1, held = null, until = null, rough = window.rough || null, raf = 0, lastDraw = 0;
+
+  // Clock speed, as a fraction of the video's speed: 1, 1/2, 1/4 ... 1/512.
+  // Down to 1/16 the browser plays the video slower itself; below that the
+  // video is paused and moved forward here, a frame at a time ("slow time").
+  const SPEEDS = Array.from({ length: 10 }, (_, k) => 2 ** -k);
+  const NATIVE_MIN = 1 / 16;
+  let speed = 0;                                   // index into SPEEDS
+  let slowPlaying = false, vt = 0, lastTick = 0, ourSeek = false;
+  const rate = () => SPEEDS[speed];
+  const speedText = () => (speed === 0 ? "1×" : `1/${2 ** speed}×`);
 
   host.innerHTML = `
     <svg class="sap-diagram" viewBox="0 0 ${VB.w} ${VB.h}" role="img" aria-label="SAP-1"></svg>
@@ -463,6 +484,8 @@ export function initSap1(host, overlaySvg, video) {
       <button type="button" data-act="play" aria-label="▶">▶</button>
       <button type="button" data-act="stop" aria-label="■">■</button>
       <button type="button" data-act="next" aria-label="›">›</button>
+      <span class="sap-speed" role="slider" tabindex="0" aria-label="clk"
+        aria-valuemin="0" aria-valuemax="${SPEEDS.length - 1}">1×</span>
     </div>
     <div class="sap-scenes" role="group">
       <button type="button" data-scene="up" aria-pressed="false">count up to 255</button>
@@ -475,6 +498,7 @@ export function initSap1(host, overlaySvg, video) {
   const svg = host.querySelector(".sap-diagram");
   const clk = host.querySelector(".sap-clk");
   const playBtn = host.querySelector('[data-act="play"]');
+  const speedEl = host.querySelector(".sap-speed");
   const sceneBtns = host.querySelectorAll("[data-scene]");
   const gloss = Object.fromEntries([...host.querySelectorAll("[data-sig]")].map((d) => [d.dataset.sig, d]));
 
@@ -488,43 +512,127 @@ export function initSap1(host, overlaySvg, video) {
     for (const id in gloss) gloss[id].classList.toggle("on", s.sig.includes(id));
   }
 
-  // Follow the video, a few times a second at most while it plays fast
+  const end = () => (video.duration || Infinity) - 0.05;
+  function seekTo(t) {
+    if (video.seeking || Math.abs(video.currentTime - t) < 0.5 / FPS) return;
+    ourSeek = true;
+    video.currentTime = t;
+  }
+
+  // Follow the video (or slow time), a few times a second at most while it runs fast
   function follow(now) {
     raf = requestAnimationFrame(follow);
+    const dt = Math.min(0.25, (now - (lastTick || now)) / 1000);
+    lastTick = now;
     if (held != null) return;                      // a button picked the step; wait for play
-    if (!video.paused && now - lastDraw < 70) return;
-    const n = Math.min(steps.length - 1, stepAt(video.currentTime, outs));
+    let t = video.currentTime;
+    if (slowPlaying) {
+      vt = Math.min(end(), vt + dt * rate());
+      if (vt >= end()) stopSlow();
+      seekTo(vt);
+      t = vt;
+    } else if (!video.paused && now - lastDraw < 70) return;
+    const n = Math.min(steps.length - 1, stepAt(t, outs));
+    if (until != null && n >= until) { const last = until; until = null; hold(last); return; }
     if (n !== i) { lastDraw = now; draw(n); }
   }
   raf = requestAnimationFrame(follow);
 
+  const playing = () => slowPlaying || !video.paused;
+  const showPlaying = () => { playBtn.textContent = playing() ? "❚❚" : "▶"; };
+  function stopSlow() { slowPlaying = false; showPlaying(); }
+
+  function start() {
+    held = null;
+    if (rate() >= NATIVE_MIN) {
+      slowPlaying = false;
+      video.playbackRate = video.defaultPlaybackRate = rate();
+      video.play().catch(() => {});
+    } else {
+      vt = video.currentTime;
+      slowPlaying = true;
+      video.pause();
+    }
+    showPlaying();
+  }
+  function pause() { stopSlow(); video.pause(); }
+
   // Buttons move the video, and the stepper with it
   function hold(n) {
     n = Math.max(0, Math.min(steps.length - 1, n));
-    video.pause();
+    pause();
     held = n;
     draw(n);
     const t = timeOf(n, outs);
-    if (Number.isFinite(t)) video.currentTime = Math.min(t, (video.duration || t) - 0.05);
+    if (Number.isFinite(t)) { ourSeek = true; video.currentTime = vt = Math.min(t, end()); }
   }
-  const showPlaying = () => { playBtn.textContent = video.paused ? "▶" : "❚❚"; };
-  const onPlay = () => { held = null; showPlaying(); };
+  const onPlay = () => { held = null; slowPlaying = false; showPlaying(); };
+  const onSeeking = () => {                        // the video's own scrubber: slow time jumps there too
+    if (!ourSeek) vt = video.currentTime;
+  };
+  const onSeeked = () => { ourSeek = false; };
   video.addEventListener("play", onPlay);
   video.addEventListener("pause", showPlaying);
+  video.addEventListener("seeking", onSeeking);
+  video.addEventListener("seeked", onSeeked);
   showPlaying();
   function scene(which) { sceneBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.scene === which))); }
+
+  // Speed: drag the number left or right (or use the arrow keys)
+  function setSpeed(k) {
+    k = Math.max(0, Math.min(SPEEDS.length - 1, k));
+    if (k === speed) return;
+    const wasPlaying = playing();
+    speed = k;
+    label();
+    if (wasPlaying) {
+      if (slowPlaying && rate() < NATIVE_MIN) return;           // still slow time: just goes slower or faster
+      if (!slowPlaying && rate() >= NATIVE_MIN) { video.playbackRate = video.defaultPlaybackRate = rate(); return; }
+      start();                                                  // crossed between the two: hand over
+    }
+  }
+  function label() {
+    speedEl.textContent = speedText();
+    speedEl.setAttribute("aria-valuenow", String(speed));
+    speedEl.setAttribute("aria-valuetext", speedText());
+  }
+  label();
+  const NOTCH = 14;                                // pixels of drag per step of speed
+  speedEl.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    const x0 = e.clientX, k0 = speed;
+    try { speedEl.setPointerCapture(e.pointerId); } catch {}
+    speedEl.classList.add("dragging");
+    const move = (m) => setSpeed(k0 - Math.round((m.clientX - x0) / NOTCH));
+    const up = () => {
+      speedEl.classList.remove("dragging");
+      speedEl.removeEventListener("pointermove", move);
+      speedEl.removeEventListener("pointerup", up);
+      speedEl.removeEventListener("pointercancel", up);
+    };
+    speedEl.addEventListener("pointermove", move);
+    speedEl.addEventListener("pointerup", up);
+    speedEl.addEventListener("pointercancel", up);
+  });
+  speedEl.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") { setSpeed(speed - 1); e.preventDefault(); }
+    if (e.key === "ArrowLeft" || e.key === "ArrowDown") { setSpeed(speed + 1); e.preventDefault(); }
+  });
 
   host.onclick = (e) => {
     const b = e.target.closest("button");
     if (!b) return;
     if (e.detail > 0) b.blur();                    // keep the spacebar for the music
     const act = b.dataset.act;
+    if (act) until = null;
     if (act === "next") hold(i + 1);
     if (act === "back") hold(i - 1);
     if (act === "stop") { scene(null); hold(0); }
-    if (act === "play") { if (video.paused) video.play().catch(() => {}); else video.pause(); }
-    if (b.dataset.scene === "up") { scene("up"); hold(outs[254] + 3); }       // adding 1 to 254, then to 255
-    if (b.dataset.scene === "down") { scene("down"); hold(outs[510] + 3); }   // showing 1, then down to 0
+    if (act === "play") { if (playing()) pause(); else start(); }
+    // a scene plays from its first number to its last, then stops there
+    const run = (from, to) => { hold(from); until = to; start(); };
+    if (b.dataset.scene === "up") { scene("up"); run(outs[0], outs[255] + 1); }      // 0, 1, 2 ... 255
+    if (b.dataset.scene === "down") { scene("down"); run(outs[256], outs[511] + 1); } // 255, 254 ... 0
   };
 
   // redraw in the other theme's ink
@@ -536,8 +644,12 @@ export function initSap1(host, overlaySvg, video) {
 
   return function destroy() {
     cancelAnimationFrame(raf);
+    slowPlaying = false;
+    video.playbackRate = video.defaultPlaybackRate = 1;
     video.removeEventListener("play", onPlay);
     video.removeEventListener("pause", showPlaying);
+    video.removeEventListener("seeking", onSeeking);
+    video.removeEventListener("seeked", onSeeked);
     themeWatch.disconnect();
     host.replaceChildren();
     overlaySvg.replaceChildren();
