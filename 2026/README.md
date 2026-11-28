@@ -13,6 +13,7 @@ A plain HTML and CSS site with no build step. Served at `feranno.github.io/2026/
 ├── rant-on-starting-anime-analysis.html   Rant, linked under Pause and Select in article.html
 ├── gings-unrivaled-genius.html            Essay on Ging, linked from the top of article.html
 ├── satoshi-kon-editing-space-and-time.html  Every Frame a Painting essay, linked from article.html
+├── leorio-is-truth.html                   Aleczandxr essay, linked from article.html
 ├── speculative_technology.html   Notes on future technologies (uses MathJax)
 ├── courses.html                  Undergraduate courses
 └── assets/

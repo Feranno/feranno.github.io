@@ -1,15 +1,12 @@
 // ================================================================
 // THEME: midnight (dark, the original) or light (white, like anandmaj's).
 //
-// The button in the top-right switches between them and the choice is
-// remembered. A small script in index.html's <head> applies a saved light
-// theme before the page draws, so it never flashes dark first.
+// The site always opens in midnight. The button in the top-right switches
+// to light for the rest of the visit; the choice isn't remembered.
 //
 //   Page colors   css/style.css (:root for midnight, [data-theme="light"])
 //   3D colors     PALETTES below, read by scene.js
 // ================================================================
-
-const STORAGE_KEY = "thauma-theme";
 
 // The 3D colors of each theme.
 //   shades   light mode's sphere colors, outermost sphere first, from pale
@@ -40,7 +37,7 @@ export const PALETTES = {
   },
 };
 
-let current = document.documentElement.dataset.theme === "light" ? "light" : "midnight";
+let current = "midnight";
 const listeners = new Set();
 
 export function getTheme() {
@@ -82,22 +79,13 @@ function apply(theme) {
   for (const fn of listeners) fn(theme);
 }
 
-function save(theme) {
-  try {
-    localStorage.setItem(STORAGE_KEY, theme);
-  } catch {
-    // storage blocked (e.g. private browsing): the choice just isn't remembered
-  }
-}
-
 
 // ---------- Setup (called once from main.js) ----------
 
 export function initTheme() {
-  apply(current);                                  // sync the button label with the saved theme
+  apply(current);                                  // start in midnight, and sync the button label
   document.querySelector("#theme-toggle").addEventListener("click", () => {
     const next = current === "light" ? "midnight" : "light";
-    save(next);
     apply(next);
   });
 }
